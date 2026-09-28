@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+  <div class="section-head">
+    <div>
+      <p class="kicker">Directory</p>
+      <h1>Open roles</h1>
+      <p class="muted">Filters map to the Job model: search, employment type, country, company, ordering, expired flag.</p>
+    </div>
+  </div>
+
+  <div class="layout-split">
+    <aside class="filters panel">
+      <h2>Refine</h2>
+      <form method="get" data-filter-form>
+        {% include "includes/form_fields.html" %}
+        <label class="checkbox-row">
+          {{ form.include_expired }}
+          {{ form.include_expired.label }}
+        </label>
+        <button class="btn" type="submit">Apply filters</button>
+      </form>
+    </aside>
+
+    <section>
+      {% if jobs %}
+        <div class="job-grid">
+          {% for job in jobs %}
+            {% include "includes/job_card.html" %}
+          {% endfor %}
+        </div>
+        {% include "includes/pagination.html" %}
+      {% else %}
+        <div class="empty panel">No listings match those filters.</div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

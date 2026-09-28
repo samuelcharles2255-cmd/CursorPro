@@ -1,0 +1,13 @@
+{% if form.non_field_errors %}
+  <div class="form-error">{{ form.non_field_errors }}</div>
+{% endif %}
+{% for field in form %}
+  {% if field.name != "include_expired" %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+      {{ field.errors }}
+    </div>
+  {% endif %}
+{% endfor %}

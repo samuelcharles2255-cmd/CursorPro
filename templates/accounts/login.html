@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block content %}
+  <div class="auth-wrap panel">
+    <p class="kicker">Welcome back</p>
+    <h1 class="panel-title">Sign in</h1>
+    <p class="muted">Email and password — the same credentials used by the JWT login endpoint.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <button class="btn" type="submit">Sign in</button>
+    </form>
+    <p class="muted" style="margin-top:1rem;">
+      <a href="{% url 'web:password_reset' %}">Forgot password?</a>
+      · <a href="{% url 'web:register' %}">Create account</a>
+    </p>
+  </div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Account{% endblock %}
+
+{% block content %}
+  <div class="account-grid">
+    <section class="panel">
+      <p class="kicker">User model</p>
+      <h1 class="panel-title">Your account</h1>
+      <p class="muted">{{ user.email }} · {{ user.get_role_display }} · {{ user.get_auth_provider_display }}</p>
+      <p class="meta">Email verified: {{ user.email_verified|yesno:"Yes,No" }}</p>
+      <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <button class="btn" type="submit">Save name</button>
+      </form>
+    </section>
+    <aside class="panel">
+      <h2>Shortcuts</h2>
+      <p><a href="{% url 'web:profile' %}">Job-seeker profile</a></p>
+      {% if user.is_employer %}
+        <p><a href="{% url 'web:employer_profile' %}">Employer profile</a></p>
+      {% endif %}
+      <p><a href="{% url 'web:change_password' %}">Change password</a></p>
+    </aside>
+  </div>
+{% endblock %}

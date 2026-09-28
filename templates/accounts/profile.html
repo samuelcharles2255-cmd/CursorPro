@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+  <div class="account-grid">
+    <section class="panel">
+      <p class="kicker">Profile model</p>
+      <h1 class="panel-title">Your profile</h1>
+      <p class="muted">Bio, location, phone, resume, avatar, and skills. Skills drive job matching.</p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% if field.name == "skills" %}
+              <input class="field-input" type="search" data-skill-filter placeholder="Filter skills">
+            {% endif %}
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <button class="btn" type="submit">Save profile</button>
+      </form>
+    </section>
+    <aside>
+      <div class="panel" style="margin-bottom:1rem;">
+        <h2>Matching jobs</h2>
+        {% if matching_jobs %}
+          {% for job in matching_jobs %}
+            <p><a href="{% url 'web:job_detail' job.pk %}">{{ job.title }}</a> <span class="meta">· {{ job.company.name }}</span></p>
+          {% endfor %}
+        {% else %}
+          <p class="muted">Select skills to surface roles that share them.</p>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+{% endblock %}

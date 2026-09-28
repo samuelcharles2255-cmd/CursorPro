@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load web_tags %}
+
+{% block title %}{{ company.name }}{% endblock %}
+
+{% block content %}
+  <section class="panel" style="margin-bottom:1.4rem;display:grid;grid-template-columns:72px 1fr;gap:1rem;align-items:center;">
+    {% if company.logo %}
+      <img class="company-logo" src="{{ company.logo }}" alt="" style="width:72px;height:72px;">
+    {% else %}
+      <div class="logo-fallback" style="width:72px;height:72px;font-size:1.2rem;">{{ company.name|initials }}</div>
+    {% endif %}
+    <div>
+      <p class="kicker">{{ company.ats_type|default:"Direct" }}</p>
+      <h1>{{ company.name }}</h1>
+      <p class="muted">{{ company.country }}</p>
+      <div class="chips">
+        {% if company.website %}<a class="chip" href="{{ company.website }}" target="_blank" rel="noopener">Website</a>{% endif %}
+        {% if company.career_page %}<a class="chip" href="{{ company.career_page }}" target="_blank" rel="noopener">Careers</a>{% endif %}
+        {% if company.career_url %}<a class="chip" href="{{ company.career_url }}" target="_blank" rel="noopener">Career URL</a>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <div class="section-head">
+    <h2>Open roles</h2>
+  </div>
+  {% if jobs %}
+    <div class="job-grid">
+      {% for job in jobs %}
+        {% include "includes/job_card.html" %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty panel">No active jobs for this company.</div>
+  {% endif %}
+{% endblock %}

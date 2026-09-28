@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Create account{% endblock %}
+
+{% block content %}
+  <div class="auth-wrap panel">
+    <p class="kicker">Join Atrium</p>
+    <h1 class="panel-title">Create an account</h1>
+    <p class="muted">Same fields as the API register serializer: email, name, role, password, password confirmation.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_fields.html" %}
+      <button class="btn" type="submit">Create account</button>
+    </form>
+    <p class="muted" style="margin-top:1rem;">Already have an account? <a href="{% url 'web:login' %}">Sign in</a></p>
+  </div>
+{% endblock %}

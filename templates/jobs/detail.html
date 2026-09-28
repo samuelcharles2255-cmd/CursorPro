@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load humanize web_tags %}
+
+{% block title %}{{ job.title }}{% endblock %}
+
+{% block content %}
+  {% if job.is_expired %}
+    <div class="expired-banner">This listing has expired. The application link may no longer accept candidates.</div>
+  {% endif %}
+
+  <div class="job-detail">
+    <article class="panel">
+      <p class="kicker">{{ job.company.name }} · {{ job.source|source_label }}</p>
+      <h1>{{ job.title }}</h1>
+      <p class="meta">
+        {{ job.location|default:"Location open" }}
+        {% if job.country %} · {{ job.country }}{% endif %}
+        {% if job.posted_at %} · Posted {{ job.posted_at|naturaltime }}{% endif %}
+      </p>
+      <div class="chips" style="margin:1rem 0;">
+        {% if job.employment_type %}<span class="chip">{{ job.employment_type|employment_label }}</span>{% endif %}
+        <span class="chip">{% salary_range job %}</span>
+        {% if job.experience_required %}<span class="chip">{{ job.experience_required }}</span>{% endif %}
+        {% if job.education_required %}<span class="chip">{{ job.education_required }}</span>{% endif %}
+      </div>
+      {% if job.skills.all %}
+        <p class="kicker">Skills on this role</p>
+        <div class="chips">
+          {% for skill in job.skills.all %}
+            <span class="chip {% if skill in matching_skills %}is-match{% endif %}">{{ skill.name }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <h2 style="margin-top:1.6rem;">Description</h2>
+      {% if job.source == "api" %}
+        <div class="snippet-notice">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <div>
+            <strong>Listing Preview</strong>
+            <p>This is a summarized excerpt from a partner job board. Please visit the employer's official page for full job specifications and direct application.</p>
+          </div>
+        </div>
+      {% endif %}
+      <div class="prose">{{ job|render_description }}</div>
+    </article>
+
+    <aside>
+      <div class="apply-box panel">
+        {% if job.company.logo %}
+          <img class="company-logo" src="{{ job.company.logo }}" alt="" style="margin-bottom:0.8rem;">
+        {% endif %}
+        <h2>{{ job.company.name }}</h2>
+        <p class="muted">{{ job.company.country }}</p>
+        <p><a href="{% url 'web:company_detail' job.company.pk %}">View company</a></p>
+        <p class="meta">{% salary_range job %}</p>
+        <a class="btn" href="{{ job.application_url }}" target="_blank" rel="noopener" data-confirm="You will leave Atrium to apply on the company site.">Apply on company site</a>
+      </div>
+    </aside>
+  </div>
+
+  {% if related_jobs %}
+    <div class="section-head">
+      <h2>Related roles</h2>
+    </div>
+    <div class="job-grid">
+      {% for job in related_jobs %}
+        {% include "includes/job_card.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

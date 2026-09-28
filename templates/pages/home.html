@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load web_tags %}
+
+{% block title %}Find considered work{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div>
+      <p class="kicker">A modern classic job board</p>
+      <h1>Roles worth opening, from companies that still write well.</h1>
+      <p class="lede">Search live listings by title, city, employment type, and the skills on your profile. Apply on the company site — Atrium keeps the record honest.</p>
+    </div>
+    <div class="hero-panel">
+      <form action="{% url 'web:job_list' %}" method="get" class="search-row">
+        <input class="field-input" type="search" name="search" placeholder="Try Python, Nairobi, design…">
+        <button class="btn-gold" type="submit">Search</button>
+      </form>
+      <div class="stats">
+        <div class="stat"><b>{{ job_count }}</b> open roles</div>
+        <div class="stat"><b>{{ company_count }}</b> companies</div>
+        <div class="stat"><b>{{ skill_count }}</b> skills tracked</div>
+      </div>
+    </div>
+  </section>
+
+  {% if matching_jobs %}
+    <div class="section-head">
+      <div>
+        <p class="kicker">Matched to your profile</p>
+        <h2>Jobs that share your skills</h2>
+      </div>
+      <a class="btn-secondary" href="{% url 'web:profile' %}">Edit skills</a>
+    </div>
+    <div class="job-grid">
+      {% for job in matching_jobs %}
+        {% include "includes/job_card.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="section-head">
+    <div>
+      <p class="kicker">Recently posted</p>
+      <h2>Featured openings</h2>
+    </div>
+    <a class="btn-secondary" href="{% url 'web:job_list' %}">Browse all</a>
+  </div>
+  {% if featured_jobs %}
+    <div class="job-grid">
+      {% for job in featured_jobs %}
+        {% include "includes/job_card.html" %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty panel">No jobs imported yet. Use the admin or the import command to load listings.</div>
+  {% endif %}
+{% endblock %}

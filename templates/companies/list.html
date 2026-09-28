@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load web_tags %}
+
+{% block title %}Companies{% endblock %}
+
+{% block content %}
+  <div class="section-head">
+    <div>
+      <p class="kicker">Employers</p>
+      <h1>Companies</h1>
+    </div>
+    <form method="get" class="search-row" style="min-width:min(360px,100%);">
+      <input class="field-input" type="search" name="search" value="{{ search }}" placeholder="Search companies">
+      <button class="btn" type="submit">Search</button>
+    </form>
+  </div>
+
+  {% if companies %}
+    <div class="company-grid">
+      {% for company in companies %}
+        <a class="company-card" href="{% url 'web:company_detail' company.pk %}">
+          {% if company.logo %}
+            <img class="company-logo" src="{{ company.logo }}" alt="">
+          {% else %}
+            <div class="logo-fallback">{{ company.name|initials }}</div>
+          {% endif %}
+          <div>
+            <h3 class="serif" style="margin:0;">{{ company.name }}</h3>
+            <p class="meta">{{ company.country|default:"International" }} · {{ company.job_count }} roles</p>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+    {% include "includes/pagination.html" %}
+  {% else %}
+    <div class="empty panel">No companies found.</div>
+  {% endif %}
+{% endblock %}

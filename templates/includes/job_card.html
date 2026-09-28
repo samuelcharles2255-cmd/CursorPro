@@ -1,0 +1,34 @@
+{% load humanize web_tags %}
+<article class="job-card">
+  <div class="card-top">
+    <div>
+      <p class="kicker">{{ job.company.name }}</p>
+      <h3 class="serif" style="margin:0;font-size:1.35rem;">
+        <a href="{% url 'web:job_detail' job.pk %}">{{ job.title }}</a>
+      </h3>
+      <p class="meta">
+        {{ job.location|default:"Location open" }}{% if job.country %} · {{ job.country }}{% endif %}
+      </p>
+    </div>
+    {% if job.company.logo %}
+      <img class="company-logo" src="{{ job.company.logo }}" alt="">
+    {% else %}
+      <div class="logo-fallback">{{ job.company.name|initials }}</div>
+    {% endif %}
+  </div>
+  <div class="chips">
+    {% if job.employment_type %}
+      <span class="chip">{{ job.employment_type|employment_label }}</span>
+    {% endif %}
+    <span class="chip">{% salary_range job %}</span>
+    {% if job.is_expired %}
+      <span class="badge">Expired</span>
+    {% endif %}
+  </div>
+  <div class="card-footer">
+    <span class="meta">
+      {% if job.posted_at %}{{ job.posted_at|naturaltime }}{% else %}Recently posted{% endif %}
+    </span>
+    <a class="btn-secondary" href="{% url 'web:job_detail' job.pk %}">View role</a>
+  </div>
+</article>

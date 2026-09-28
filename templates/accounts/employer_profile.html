@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Employer profile{% endblock %}
+
+{% block content %}
+  <div class="account-grid">
+    <section class="panel">
+      <p class="kicker">EmployerProfile model</p>
+      <h1 class="panel-title">Employer profile</h1>
+      <p class="muted">Company and job title. Verification is staff-only, matching the serializer.</p>
+      <p class="badge {% if employer.is_verified %}badge-gold{% endif %}">
+        {% if employer.is_verified %}Verified{% else %}Not verified{% endif %}
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <button class="btn" type="submit">Save employer profile</button>
+      </form>
+    </section>
+    <aside class="panel">
+      <h2>Company listings</h2>
+      {% if company_jobs %}
+        {% for job in company_jobs %}
+          <p><a href="{% url 'web:job_detail' job.pk %}">{{ job.title }}</a></p>
+        {% empty %}
+          <p class="muted">No active jobs for this company.</p>
+        {% endfor %}
+      {% else %}
+        <p class="muted">Choose a company to see its open roles.</p>
+      {% endif %}
+    </aside>
+  </div>
+{% endblock %}
