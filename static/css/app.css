@@ -997,6 +997,30 @@ h2 {
   grid-template-columns: 52px 1fr;
   gap: 1rem;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.company-card .company-info,
+.company-card > div {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.company-card h3,
+.company-card .company-name {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: var(--ice);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.company-card:hover h3,
+.company-card:hover .company-name {
+  color: var(--white);
 }
 
 /* Pagination */

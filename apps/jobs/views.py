@@ -28,8 +28,10 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["employment_type", "country", "source", "company"]
     search_fields = ["title", "description", "location"]
-    ordering_fields = ["posted_at", "salary_min", "salary_max"]
-    ordering = ["-posted_at"]
+    ordering_fields = ["posted_at", "created_at", "salary_min", "salary_max"]
+    # Scraped jobs (NMB, Equity, etc.) have NULL posted_at — fall back to created_at
+    # so freshly-scraped jobs appear near the top rather than sinking to the bottom.
+    ordering = ["-posted_at", "-created_at"]
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -42,6 +44,7 @@ class JobViewSet(viewsets.ReadOnlyModelViewSet):
         if self.request.query_params.get("include_expired") != "true":
             qs = qs.filter(Q(expires_at__isnull=True) | Q(expires_at__gte=timezone.now()))
         return qs
+
 
 
 class CompanyViewSet(viewsets.ReadOnlyModelViewSet):

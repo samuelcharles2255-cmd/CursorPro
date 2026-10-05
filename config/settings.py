@@ -22,6 +22,7 @@ load_dotenv()
 
 
 JOOBLE_API_KEY = os.getenv("JOOBLE_API_KEY")
+FIRECRAWL_API_KEY = os.environ["FIRECRAWL_API_KEY"]
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -35,10 +36,7 @@ ALLOWED_HOSTS = ['*']
 
 # Trust tunnel HTTPS origins so Django CSRF protection allows POST requests
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.ngrok-free.dev',
-    'https://*.ngrok-free.app',
-    'https://*.ngrok.io',
-    'https://*.ngrok.app',
+    
     'https://*.trycloudflare.com',
 ]
 

@@ -1,5 +1,19 @@
 import logging
 
+from .boards import AjirikaScraper, BrighterMondayScraper, FuzuScraper
+from .browser import AjiraPortalScraper, CRDBScraper, VodacomScraper
+from .crdb_bank import CRDBBankScraper
+from .equity import EquityScraper
+from .fursa import FursaTanzaniaScraper
+from .nmb import NMBScraper
+from .mabumbe import MabumbeScraper
+from .ajiramarket import AjiraMarketScraper
+from .alljobspo import AllJobspoScraper
+from .ekazi import EkaziScraper
+from .eastworka import EastworkaScraper
+from .careerlinkafrica import CareerLinkAfricaScraper
+
+
 from apps.jobs.models import Job
 from .greenhouse import (
     fetch_greenhouse_jobs,
@@ -25,6 +39,7 @@ from .jooble import (
 logger = logging.getLogger(__name__)
 
 __all__ = [
+    # ATS helpers
     "fetch_greenhouse_jobs",
     "get_greenhouse_jobs",
     "normalize_greenhouse_job",
@@ -39,6 +54,24 @@ __all__ = [
     "sync_jooble_jobs",
     "sync_company_ats_jobs",
     "sync_all_ats_jobs",
+    # Scraper classes
+    "NMBScraper",
+    "EquityScraper",
+    "AjiraPortalScraper",
+    "CRDBScraper",
+    "CRDBBankScraper",
+    "VodacomScraper",
+    "BrighterMondayScraper",
+    "FuzuScraper",
+    "AjirikaScraper",
+    "FursaTanzaniaScraper",
+    "MabumbeScraper",
+    "AjiraMarketScraper",
+    "AllJobspoScraper",
+    "EkaziScraper",
+    "EastworkaScraper",
+    "CareerLinkAfricaScraper",
+    "SCRAPERS",
 ]
 
 
@@ -149,3 +182,28 @@ def sync_all_ats_jobs(companies=None, limit=None):
         "total_created": total_created,
         "total_updated": total_updated,
     }
+
+# Order = run order. Cheap, verified, plain-HTTP scrapers first; browser/unverified ones last.
+SCRAPERS = {
+    cls.key: cls
+    for cls in (
+        NMBScraper,
+        EquityScraper,
+        FursaTanzaniaScraper,       # fursa.co.tz (WP REST API, plain HTTP)
+        CRDBBankScraper,            # careers.crdbbank.co.tz (direct REST API)
+        EkaziScraper,               # ekazi.co.tz (REST API via api.ekazi.co.tz)
+        MabumbeScraper,             # mabumbe.com (WordPress + WP Job Manager HTML)
+        AjiraMarketScraper,         # ajiramarket.co.tz (server-rendered HTML table)
+        AllJobspoScraper,           # jobsintanzania.alljobspo.com (HTML + JSON-LD)
+        CareerLinkAfricaScraper,    # careerlinkafrica.com (Next.js JSON-LD)
+        EastworkaScraper,           # eastworka.com (React SPA via sitemap)
+        AjiraPortalScraper,
+        VodacomScraper,
+        BrighterMondayScraper,
+        FuzuScraper,
+        AjirikaScraper,
+    )
+}
+# Alias 'crdb' to the working CRDBBankScraper as well
+SCRAPERS["crdb"] = CRDBBankScraper
+

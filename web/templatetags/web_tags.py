@@ -1,3 +1,4 @@
+import re
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -22,12 +23,27 @@ def source_label(value):
 
 @register.filter
 def initials(name):
+    """
+    Returns clean 2-letter initials for company badges.
+    Strips parenthetical suffixes like '(SFUCHAS)', ignores articles ('The'),
+    and avoids punctuation artifacts like 'S(' or 'T('.
+    """
     if not name:
         return "?"
-    parts = [p for p in str(name).split() if p]
-    if len(parts) == 1:
-        return parts[0][:2].upper()
-    return (parts[0][0] + parts[-1][0]).upper()
+    # Strip bracketed suffixes if preceded by title, e.g. " (SFUCHAS)" or " (MSF)"
+    cleaned = re.sub(r"\s*[\(\[\{][^\)\]\}]+[\)\]\}]", "", str(name)).strip()
+    if not cleaned:
+        cleaned = re.sub(r"[^\w\s]", "", str(name)).strip()
+    raw_words = [re.sub(r"[^\w]", "", w) for w in cleaned.split()]
+    words = [w for w in raw_words if w and w.lower() not in ("the", "a", "an")]
+    if not words:
+        words = [w for w in raw_words if w]
+    if not words:
+        chars = re.findall(r"[A-Za-z0-9]", str(name))
+        return "".join(chars[:2]).upper() if chars else "?"
+    if len(words) == 1:
+        return words[0][:2].upper()
+    return (words[0][0] + words[1][0]).upper()
 
 
 @register.simple_tag

@@ -4,17 +4,17 @@
 {% block title %}{{ company.name }}{% endblock %}
 
 {% block content %}
-  <section class="panel" style="margin-bottom:1.4rem;display:grid;grid-template-columns:72px 1fr;gap:1rem;align-items:center;">
+  <section class="panel" style="margin-bottom:1.4rem;display:grid;grid-template-columns:72px 1fr;gap:1.25rem;align-items:center;min-width:0;">
     {% if company.logo %}
-      <img class="company-logo" src="{{ company.logo }}" alt="" style="width:72px;height:72px;">
+      <img class="company-logo" src="{{ company.logo }}" alt="{{ company.name }} logo" style="width:72px;height:72px;">
     {% else %}
-      <div class="logo-fallback" style="width:72px;height:72px;font-size:1.2rem;">{{ company.name|initials }}</div>
+      <div class="logo-fallback" aria-hidden="true" style="width:72px;height:72px;font-size:1.3rem;">{{ company.name|initials }}</div>
     {% endif %}
-    <div>
+    <div style="min-width:0;">
       <p class="kicker">{{ company.ats_type|default:"Direct" }}</p>
-      <h1>{{ company.name }}</h1>
-      <p class="muted">{{ company.country }}</p>
-      <div class="chips">
+      <h1 style="margin:0.2rem 0;word-break:break-word;">{{ company.name }}</h1>
+      <p class="muted">{{ company.country|default:"International" }}</p>
+      <div class="chips" style="margin-top:0.75rem;">
         {% if company.website %}<a class="chip" href="{{ company.website }}" target="_blank" rel="noopener">Website</a>{% endif %}
         {% if company.career_page %}<a class="chip" href="{{ company.career_page }}" target="_blank" rel="noopener">Careers</a>{% endif %}
         {% if company.career_url %}<a class="chip" href="{{ company.career_url }}" target="_blank" rel="noopener">Career URL</a>{% endif %}

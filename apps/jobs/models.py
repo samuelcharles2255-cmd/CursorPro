@@ -1,4 +1,5 @@
-﻿from django.db import models
+import re
+from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
@@ -45,6 +46,23 @@ class Company(models.Model):
         db_table = "companies"
         ordering = ["name"]
 
+    def clean(self):
+        super().clean()
+        if self.name:
+            self.name = re.sub(r"\s+", " ", self.name).strip()
+            if len(self.name) > 255:
+                self.name = self.name[:255].strip()
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = re.sub(r"\s+", " ", self.name).strip()
+            if "skip to content" in self.name.lower():
+                m = re.search(r"\bat\s+([^–\-\(\d\n]+)", self.name, re.I)
+                self.name = m.group(1).strip() if m else "Tanzania Employer"
+            if len(self.name) > 255:
+                self.name = self.name[:255].strip()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
@@ -54,6 +72,27 @@ class Skill(models.Model):
 
     class Meta:
         db_table = "skills"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class JobSource(models.Model):
+    name = models.CharField(max_length=100)
+    url = models.URLField(max_length=1000)
+    needs_js = models.BooleanField(default=False)  # True for JS-heavy sites
+    is_active = models.BooleanField(default=True)
+    last_run_at = models.DateTimeField(null=True, blank=True)
+    last_status = models.CharField(max_length=20, blank=True)
+    last_error = models.TextField(blank=True)
+    last_content_hash = models.CharField(max_length=64, blank=True)
+
+    check_every_days = models.PositiveSmallIntegerField(default=1)
+    fail_count = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        db_table = "job_sources"
         ordering = ["name"]
 
     def __str__(self):
@@ -80,7 +119,7 @@ class Job(models.Model):
     ]
 
     title = models.CharField(max_length=255, db_index=True)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="jobs")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="jobs", null=True, blank=True)
     location = models.CharField(max_length=255, blank=True, db_index=True)
     country = models.CharField(max_length=100, blank=True, db_index=True)
     description = models.TextField()
@@ -95,7 +134,7 @@ class Job(models.Model):
     education_required = models.CharField(max_length=255, blank=True)
 
     application_url = models.URLField(max_length=1000)  # where the "apply" tap sends the user
-    source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default=SOURCE_DIRECT)
     source_job_id = models.CharField(max_length=255, blank=True, null=True)
 
     skills = models.ManyToManyField(Skill, through="JobSkill", related_name="jobs")
@@ -104,6 +143,21 @@ class Job(models.Model):
     expires_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    ## FOR AI SCRAPING FROM OTHER PLATFORMS
+    job_source = models.ForeignKey(
+        JobSource,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="jobs",
+    )
+    organization = models.CharField(max_length=200, blank=True)
+    deadline = models.DateField(null=True, blank=True)
+    fingerprint = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    first_seen = models.DateTimeField(default=timezone.now)
+    last_seen = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         db_table = "jobs"
@@ -121,11 +175,16 @@ class Job(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.title} @ {self.company.name}"
+        comp = self.company.name if self.company else (self.organization or "Unknown")
+        return f"{self.title} @ {comp}"
 
     @property
     def is_expired(self):
         return bool(self.expires_at and self.expires_at < timezone.now())
+
+    @property
+    def apply_url(self):
+        return self.application_url
 
 
 class JobSkill(models.Model):

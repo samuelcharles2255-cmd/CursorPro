@@ -20,13 +20,13 @@
       {% for company in companies %}
         <a class="company-card" href="{% url 'web:company_detail' company.pk %}">
           {% if company.logo %}
-            <img class="company-logo" src="{{ company.logo }}" alt="">
+            <img class="company-logo" src="{{ company.logo }}" alt="{{ company.name }}">
           {% else %}
-            <div class="logo-fallback">{{ company.name|initials }}</div>
+            <div class="logo-fallback" aria-hidden="true">{{ company.name|initials }}</div>
           {% endif %}
-          <div>
-            <h3 class="serif" style="margin:0;">{{ company.name }}</h3>
-            <p class="meta">{{ company.country|default:"International" }} · {{ company.job_count }} roles</p>
+          <div class="company-info">
+            <h3 class="serif company-name" title="{{ company.name }}">{{ company.name|truncatechars:65 }}</h3>
+            <p class="meta">{{ company.country|default:"International" }} · {{ company.job_count }} role{{ company.job_count|pluralize }}</p>
           </div>
         </a>
       {% endfor %}

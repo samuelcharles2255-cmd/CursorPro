@@ -2,7 +2,7 @@
 <article class="job-card">
   <div class="card-top">
     <div>
-      <p class="kicker">{{ job.company.name }}</p>
+      <p class="kicker">{{ job.company.name|default:job.organization|default:"Employer"|truncatechars:50 }}</p>
       <h3 class="serif" style="margin:0;font-size:1.35rem;">
         <a href="{% url 'web:job_detail' job.pk %}">{{ job.title }}</a>
       </h3>
@@ -11,9 +11,9 @@
       </p>
     </div>
     {% if job.company.logo %}
-      <img class="company-logo" src="{{ job.company.logo }}" alt="">
+      <img class="company-logo" src="{{ job.company.logo }}" alt="{{ job.company.name }} logo">
     {% else %}
-      <div class="logo-fallback">{{ job.company.name|initials }}</div>
+      <div class="logo-fallback" aria-hidden="true">{{ job.company.name|default:job.organization|initials }}</div>
     {% endif %}
   </div>
   <div class="chips">

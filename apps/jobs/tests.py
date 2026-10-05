@@ -89,3 +89,39 @@ class JobDetailViewRenderingTests(TestCase):
         content = response.content.decode("utf-8")
         self.assertIn("empty-description-card", content)
         self.assertIn("Full Role Details Available on Employer Site", content)
+
+
+class CompanyInitialsAndSanitizationTests(TestCase):
+    def test_initials_filter_removes_parentheses_and_punctuation(self):
+        from web.templatetags.web_tags import initials
+
+        self.assertEqual(initials("St. Francis University (SFUCHAS)"), "SF")
+        self.assertEqual(initials("TANZANIA WOMEN LAWYERS ASSOCIATION (TAWLA)"), "TW")
+        self.assertEqual(initials("The Foundation For Tomorrow (TFFT)"), "FF")
+        self.assertEqual(initials("Médecins Sans Frontières (MSF)"), "MS")
+        self.assertEqual(initials("Equity Bank"), "EB")
+        self.assertEqual(initials("Stripe"), "ST")
+        self.assertEqual(initials(""), "?")
+
+    def test_clean_company_name_sanitizes_page_dump(self):
+        from apps.jobs.services.persist import clean_company_name
+
+        garbage = "Skip to content ☰Menu Home Jobs Tenders Post Job Scout – 3 vacancies at Enza Zaden Tanzania Ltd – October 2026"
+        cleaned = clean_company_name(garbage)
+        self.assertEqual(cleaned, "Enza Zaden Tanzania Ltd")
+
+    def test_company_model_caps_and_cleans_name(self):
+        long_name = "A" * 300
+        comp = Company(name=long_name)
+        comp.save()
+        self.assertLessEqual(len(comp.name), 255)
+
+    def test_company_list_view_renders_clean_html(self):
+        client = Client()
+        Company.objects.create(name="Clean Company 1", country="Tanzania")
+        response = client.get("/companies/")
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode("utf-8")
+        self.assertIn("Clean Company 1", content)
+        self.assertIn("CC", content)  # clean initials
+

@@ -33,7 +33,11 @@ PAGE_SIZE = 12
 
 
 def _active_jobs():
-    return Job.objects.select_related("company").prefetch_related("skills")
+    return (
+        Job.objects.select_related("company")
+        .prefetch_related("skills")
+        .order_by("-posted_at", "-created_at")
+    )
 
 
 def _exclude_expired(qs):
@@ -103,7 +107,10 @@ def job_list(request):
             qs = qs.filter(company=data["company"])
         ordering = data.get("ordering") or "-posted_at"
         allowed = {"-posted_at", "posted_at", "-salary_max", "salary_min"}
-        qs = qs.order_by(ordering if ordering in allowed else "-posted_at")
+        if ordering == "-posted_at":
+            qs = qs.order_by("-posted_at", "-created_at")
+        else:
+            qs = qs.order_by(ordering if ordering in allowed else "-posted_at")
 
     paginator = Paginator(qs, PAGE_SIZE)
     page = paginator.get_page(request.GET.get("page"))
