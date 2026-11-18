@@ -1,0 +1,123 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Kamilisha Oda" "Place Your Order" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 760px; margin: 30px auto;">
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 28px; box-shadow: var(--shadow);">
+    
+    <div style="margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0 0 6px; color: #0f172a;">
+        {% t "Kamilisha Oda ya Bidhaa" "Confirm & Place Order" %}
+      </h1>
+      <p style="font-size: 0.88rem; color: #64748b; margin: 0;">
+        {% t "Oda hii itatumwa moja kwa moja kwa muuzaji dukani ili akuandalie bidhaa au kuweka mipango ya usafirishaji." "Your order details will be dispatched directly to the merchant to prepare items for collection or dispatch." %}
+      </p>
+    </div>
+
+    <!-- Items Summary by Seller -->
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+      <div style="font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; color: #475569;">
+        {% t "Muhtasari wa Bidhaa Zako:" "Order Items Summary:" %}
+      </div>
+
+      {% for seller, seller_items in sellers_dict.items %}
+        <div style="margin-bottom: 14px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
+          <div style="font-weight: 700; color: #0f766e; font-size: 0.9rem;">
+            {{ seller.business_name }} · {{ seller.ward }}
+          </div>
+          {% for item in seller_items %}
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #334155; margin-top: 4px;">
+              <span>{{ item.quantity }}x {{ item.listing.title }}</span>
+              <strong style="color: #0f766e;">{{ item.subtotal|tzs }}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-top: 10px;">
+        <span>{% t "Jumla Kuu:" "Grand Total:" %}</span>
+        <span style="color: #0f766e; font-size: 1.3rem;">{{ total|tzs }}</span>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+        <div>
+          <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            {% t "Jina Lako Kamili:" "Your Full Name:" %} *
+          </label>
+          {{ form.customer_name }}
+        </div>
+        <div>
+          <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            {% t "Namba ya Simu (Kupigiwa):" "Phone Number (Calls):" %} *
+          </label>
+          {{ form.customer_phone }}
+        </div>
+      </div>
+
+      <!-- Fulfillment Method -->
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+          {% t "Njia ya Kupokea Bidhaa:" "Fulfillment Method:" %} *
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <label style="border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; background: #f8fafc;">
+            <input type="radio" name="fulfillment_type" value="pickup" checked style="accent-color: #0f766e; margin-top: 3px;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem; color: #0f172a;">{% t "Kuchukua Dukani" "Store Pickup" %}</div>
+              <div style="font-size: 0.78rem; color: #64748b;">{% t "Utakwenda dukani mwenyewe baada ya oda kuthibitishwa" "Pick up in person at merchant premises" %}</div>
+            </div>
+          </label>
+          <label style="border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; background: #f8fafc;">
+            <input type="radio" name="fulfillment_type" value="delivery" style="accent-color: #0f766e; margin-top: 3px;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem; color: #0f172a;">{% t "Kuletewa Dar (Bodaboda / Courier)" "Local Courier Delivery" %}</div>
+              <div style="font-size: 0.78rem; color: #64748b;">{% t "Utatumiwa mahali ulipo Dar es Salaam" "Direct delivery to your address in Dar" %}</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Delivery Details -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+        <div>
+          <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            {% t "Wilaya ya Kuletewa:" "Delivery District:" %}
+          </label>
+          {{ form.delivery_district }}
+        </div>
+        <div>
+          <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            {% t "Wodi / Mtaa wa Kuletewa:" "Delivery Ward / Area:" %}
+          </label>
+          {{ form.delivery_ward }}
+        </div>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Maelezo ya Eneo / Jengo (Address & Landmark):" "Exact Address / Landmark:" %}
+        </label>
+        {{ form.delivery_address }}
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Maagizo ya Ziada kwa Muuzaji (Optional Notes):" "Special Instructions:" %}
+        </label>
+        {{ form.notes }}
+      </div>
+
+      <button type="submit" class="mp-btn-cta mp-btn-order" style="padding: 14px; font-size: 1rem;">
+        {% t "Thibitisha na Tuma Oda (Confirm & Place Order) →" "Confirm & Place Order →" %}
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

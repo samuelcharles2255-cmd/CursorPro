@@ -1,0 +1,72 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Oda Zangu" "My Orders" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 800px; margin: 30px auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: #0f172a;">
+      {% t "Oda Zangu" "My Orders" %}
+    </h1>
+    <a href="{% url 'marketplace:home' %}" class="mp-lang-toggle" style="font-size: 0.82rem;">
+      + {% t "Nunua Zaidi" "Explore Listings" %}
+    </a>
+  </div>
+
+  {% if orders %}
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      {% for ord in orders %}
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+            <div>
+              <div style="font-weight: 800; color: #0f766e; font-size: 1.05rem;">
+                <a href="{% url 'marketplace:order_detail' order_number=ord.order_number %}" style="color: inherit; text-decoration: none;">
+                  #{{ ord.order_number }}
+                </a>
+              </div>
+              <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                {{ ord.created_at|date:"d M Y, H:i" }} · {{ ord.business.business_name }}
+              </div>
+            </div>
+
+            <span style="background: #f1f5f9; color: #334155; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
+              {{ ord.get_status_display }}
+            </span>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            {% for item in ord.items.all %}
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #334155; margin-bottom: 4px;">
+                <span>{{ item.quantity }}x {{ item.product_title }}</span>
+                <strong>{{ item.total_price|tzs }}</strong>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+            <div style="font-size: 0.85rem; color: #64748b;">
+              {{ ord.get_fulfillment_type_display }}
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #0f766e;">
+              {{ ord.total_amount|tzs }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="background: white; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 48px 24px; text-align: center;">
+      <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem; font-weight: 700; margin: 0 0 6px; color: #0f172a;">
+        {% t "Bado hujaweka oda yoyote" "No orders placed yet" %}
+      </h3>
+      <p style="color: #64748b; margin: 0 0 20px; font-size: 0.92rem;">
+        {% t "Tafuta bidhaa unazopenda na uweke oda yako ya kwanza leo." "Browse verified merchant catalogs and place your first order." %}
+      </p>
+      <a href="{% url 'marketplace:home' %}" class="mp-btn-post">
+        {% t "Anza Kununua" "Start Browsing" %}
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

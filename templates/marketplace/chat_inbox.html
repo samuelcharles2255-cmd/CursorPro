@@ -1,0 +1,65 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Mazungumzo na Wauzaji" "Messages & Inquiries" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 680px; margin: 30px auto;">
+  <div style="margin-bottom: 24px;">
+    <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0 0 6px; color: #0f172a;">
+      {% t "Mazungumzo ya Moja kwa Moja" "Direct Messages & Chats" %}
+    </h1>
+    <p style="color: #64748b; font-size: 0.88rem; margin: 0;">
+      {% t "Mawasiliano ya moja kwa moja na wauzaji wa maduka kuhusu bidhaa, bei, na maelekezo." "Direct conversations with verified merchants regarding product specifications, pricing, and fulfillment." %}
+    </p>
+  </div>
+
+  {% if conversations %}
+    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm);">
+      {% for conv in conversations %}
+        <a href="{% url 'marketplace:chat_detail' conversation_id=conv.pk %}" style="display: flex; gap: 14px; align-items: center; padding: 16px 20px; border-bottom: 1px solid #f1f5f9; text-decoration: none; color: inherit; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+          <div class="mp-seller-avatar" style="width: 44px; height: 44px; font-size: 0.95rem; font-weight: 700; background: #0f766e; color: white;">
+            {{ conv.business.business_name|slice:":2"|upper }}
+          </div>
+          <div style="flex: 1; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">
+                {{ conv.business.business_name }}
+              </div>
+              <span style="font-size: 0.75rem; color: #94a3b8;">
+                {{ conv.updated_at|date:"d M, H:i" }}
+              </span>
+            </div>
+            {% if conv.listing %}
+              <div style="font-size: 0.8rem; color: #0f766e; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;">
+                {{ conv.listing.title }}
+              </div>
+            {% endif %}
+            <div style="font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+              {% with last_msg=conv.messages.last %}
+                {% if last_msg %}
+                  {{ last_msg.text }}
+                {% else %}
+                  {% t "Anza mazungumzo..." "Start conversation..." %}
+                {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="background: white; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 48px 24px; text-align: center;">
+      <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem; font-weight: 700; margin: 0 0 6px; color: #0f172a;">
+        {% t "Hakuna mazungumzo bado" "No active chats yet" %}
+      </h3>
+      <p style="color: #64748b; margin: 0 0 20px; font-size: 0.92rem;">
+        {% t "Unapopitia bidhaa unaweza kumuuliza muuzaji maswali moja kwa moja kupitia kitufe cha 'Ongea Hapa'." "When browsing listings, you can send in-app messages directly to any store owner." %}
+      </p>
+      <a href="{% url 'marketplace:home' %}" class="mp-btn-post">
+        {% t "Tazama Bidhaa" "Browse Listings" %}
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

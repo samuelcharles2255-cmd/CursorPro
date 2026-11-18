@@ -1,0 +1,154 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{{ title }} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 720px; margin: 30px auto;">
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 28px; box-shadow: var(--shadow);">
+    
+    <div style="margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0 0 6px; color: #0f172a;">
+        {{ title }}
+      </h1>
+      <p style="font-size: 0.9rem; color: #64748b; margin: 0;">
+        {% t "Weka taarifa sahihi na picha nzuri (hadi picha 8) ili kuvutia wateja wa haraka." "Provide clear specifications and high-resolution photos (up to 8 images) for prompt buyer discovery." %}
+      </p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Title -->
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Kichwa cha Tangazo (Title):" "Listing Title:" %} *
+        </label>
+        {{ form.title }}
+        {% if form.title.errors %}<div style="color:#dc2626; font-size:0.8rem; margin-top:4px;">{{ form.title.errors }}</div>{% endif %}
+      </div>
+
+      <!-- Category -->
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Kategoria (Category):" "Category:" %} *
+        </label>
+        {{ form.category }}
+      </div>
+
+      <!-- Price & Negotiable -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 18px; align-items: end;">
+        <div>
+          <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            {% t "Bei (TSh):" "Price (TZS):" %} *
+          </label>
+          {{ form.price }}
+        </div>
+        <div style="padding-bottom: 12px;">
+          <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: #334155;">
+            {{ form.is_negotiable }}
+            <span>{% t "Bei inamaongezi" "Negotiable" %}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Condition -->
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Hali ya Bidhaa (Condition):" "Condition:" %} *
+        </label>
+        {{ form.condition }}
+      </div>
+
+      <!-- Location specifics in Dar -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+        <div>
+          <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            {% t "Wilaya ya Dar:" "District in Dar:" %} *
+          </label>
+          {{ form.district }}
+        </div>
+        <div>
+          <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            {% t "Wodi / Eneo (Ward):" "Ward:" %} *
+          </label>
+          {{ form.ward }}
+        </div>
+      </div>
+
+      <!-- Fulfillment Options -->
+      <div style="display: flex; gap: 24px; margin-bottom: 18px; background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: #334155;">
+          {{ form.pickup_available }}
+          <span>{% t "Kuchukua Dukani kuko wazi" "Store Pickup Available" %}</span>
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: #334155;">
+          {{ form.delivery_available }}
+          <span>{% t "Huduma ya Usafirishaji inapatikana" "Courier Delivery in Dar" %}</span>
+        </label>
+      </div>
+
+      <!-- Category Specific Attributes Container (dynamic) -->
+      <div id="dynamic-attributes-container" style="margin-bottom: 18px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
+        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; color: #334155; text-transform: uppercase; letter-spacing: 0.5px;">
+          {% t "Sifa za Ziada (Category Attributes):" "Specific Attributes:" %}
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 600; color: #475569;">{% t "Chapa / Brand:" "Brand:" %}</label>
+            <input type="text" name="attr_brand" value="{{ listing.attributes.brand|default:'' }}" class="form-control" placeholder="Mfano: Apple, Samsung, Toyota...">
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 600; color: #475569;">{% t "Uwezo / Saizi / Model:" "Capacity / Size / Model:" %}</label>
+            <input type="text" name="attr_model_size" value="{{ listing.attributes.model_size|default:'' }}" class="form-control" placeholder="Mfano: 256GB / 42 / Pro Max...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Maelezo ya Tangazo (Description):" "Description:" %} *
+        </label>
+        {{ form.description }}
+      </div>
+
+      <!-- Photos Upload (Up to 8 Images) -->
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Picha za Bidhaa (Hadi picha 8):" "Product Images (Up to 8 photos):" %}
+        </label>
+        <input 
+          type="file" 
+          name="images" 
+          multiple 
+          accept="image/*" 
+          class="form-control"
+          id="photo-uploader"
+        >
+        <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;">
+          {% t "Picha ya kwanza itakuwa picha kuu ya tangazo. Mfumo unazibana kiotomatiki ili zifunguke haraka kwenye mtandao wa 3G (<150KB)." "First image is cover. Images are compressed automatically for fast loading (<150KB)." %}
+        </div>
+
+        {% if existing_images %}
+          <div style="margin-top: 12px;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px;">
+              {% t "Picha zilizopo sasa:" "Current images:" %}
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              {% for img in existing_images %}
+                <img src="{{ img.image.url }}" alt="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;">
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="mp-btn-cta mp-btn-order" style="padding: 14px; font-size: 1rem;">
+        {% t "Weka Tangazo Hewani (Publish Listing) →" "Publish Listing →" %}
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

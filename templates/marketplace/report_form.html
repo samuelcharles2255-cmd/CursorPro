@@ -1,0 +1,50 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Ripoti Tangazo" "Report Listing" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 540px; margin: 30px auto;">
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 28px; box-shadow: var(--shadow);">
+    
+    <div style="margin-bottom: 20px;">
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.6rem; font-weight: 700; margin: 0 0 6px; color: #dc2626;">
+        {% t "Ripoti Tangazo Hili" "Report this Listing" %}
+      </h1>
+      <p style="font-size: 0.88rem; color: #64748b; margin: 0;">
+        {% t "Kichwa:" "Listing:" %} <strong>{{ listing.title }}</strong><br>
+        {% t "Muuzaji:" "Seller:" %} <strong>{{ listing.seller.business_name }}</strong>
+      </p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Sababu ya Kuripoti (Reason):" "Reason for Report:" %} *
+        </label>
+        {{ form.reason }}
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Maelezo Zaidi (Explanation):" "Explanation:" %} *
+        </label>
+        {{ form.explanation }}
+      </div>
+
+      <button type="submit" class="mp-btn-cta" style="background: #dc2626; color: white; padding: 12px; font-size: 0.95rem;">
+        {% t "Wasilisha Taarifa ya Ukaguzi →" "Submit Report to Moderation →" %}
+      </button>
+
+      <div style="text-align: center; margin-top: 14px;">
+        <a href="{% url 'marketplace:listing_detail' slug=listing.slug %}" style="color: #64748b; font-size: 0.85rem; text-decoration: none;">
+          ← {% t "Ghairi na Rudi" "Cancel & Return" %}
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

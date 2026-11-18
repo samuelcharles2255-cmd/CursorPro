@@ -1,0 +1,193 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}
+  {% if q %}{{ q }} - {% endif %}{% t "Tafuta Bidhaa Dar es Salaam" "Search Listings in Dar es Salaam" %} · Atrium Marketplace
+{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="margin-top: 24px;">
+
+  <!-- Search Breadcrumb & Header -->
+  <div style="margin-bottom: 24px;">
+    <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2.2rem; font-weight: 700; margin: 0 0 6px; color: #111827;">
+      {% if q %}
+        {% t "Matokeo ya Utafutaji:" "Search Results for:" %} "{{ q }}"
+      {% elif selected_category %}
+        {% if request.session.lang == 'en' %}{{ selected_category.name_en }}{% else %}{{ selected_category.name_sw }}{% endif %}
+      {% else %}
+        {% t "Bidhaa Zote Dar es Salaam" "All Verified Marketplace Listings" %}
+      {% endif %}
+    </h1>
+    <div style="font-size: 0.88rem; color: #64748b;">
+      {% t "Jumla ya bidhaa:" "Total listings found:" %} <strong>{{ total_results }}</strong>
+      {% if ward %} · Wodi: <strong>{{ ward }}</strong>{% endif %}
+      {% if district %} · Wilaya: <strong>{{ district|capfirst }}</strong>{% endif %}
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+
+    <!-- Filter Controls Bar -->
+    <form method="get" action="{% url 'marketplace:listing_list' %}" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+      <input type="hidden" name="q" value="{{ q }}">
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; align-items: end;">
+        
+        <!-- Category -->
+        <div>
+          <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+            {% t "Kategoria" "Category" %}
+          </label>
+          <select name="category" class="form-select" onchange="this.form.submit()">
+            <option value="">-- {% t "Kategoria Zote" "All Categories" %} --</option>
+            {% for cat in categories %}
+              <option value="{{ cat.slug }}" {% if selected_category.slug == cat.slug %}selected{% endif %}>
+                {{ cat.name_en }} / {{ cat.name_sw }}
+              </option>
+              {% for sub in cat.children.all %}
+                <option value="{{ sub.slug }}" {% if selected_category.slug == sub.slug %}selected{% endif %}>
+                  &nbsp;&nbsp;↳ {{ sub.name_en }} / {{ sub.name_sw }}
+                </option>
+              {% endfor %}
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- District -->
+        <div>
+          <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+            {% t "Wilaya ya Dar" "District" %}
+          </label>
+          <select name="district" class="form-select" onchange="this.form.submit()">
+            <option value="">-- {% t "Wilaya Zote" "All Districts" %} --</option>
+            {% for d_val, d_label in districts %}
+              <option value="{{ d_val }}" {% if district == d_val %}selected{% endif %}>{{ d_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Ward Input -->
+        <div>
+          <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+            {% t "Wodi au Mtaa" "Ward / Neighborhood" %}
+          </label>
+          <input type="text" name="ward" value="{{ ward }}" placeholder="Kariakoo, Sinza, Mwenge..." class="form-control">
+        </div>
+
+        <!-- Condition -->
+        <div>
+          <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+            {% t "Hali ya Bidhaa" "Condition" %}
+          </label>
+          <select name="condition" class="form-select" onchange="this.form.submit()">
+            <option value="">-- {% t "Hali Zote" "Any Condition" %} --</option>
+            <option value="new" {% if condition == 'new' %}selected{% endif %}>Brand New</option>
+            <option value="like_new" {% if condition == 'like_new' %}selected{% endif %}>Certified Pre-Owned</option>
+            <option value="good" {% if condition == 'good' %}selected{% endif %}>Used - Good Condition</option>
+            <option value="fair" {% if condition == 'fair' %}selected{% endif %}>Used - Fair Condition</option>
+          </select>
+        </div>
+
+        <!-- Sort -->
+        <div>
+          <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+            {% t "Mpangilio" "Sort by" %}
+          </label>
+          <select name="sort" class="form-select" onchange="this.form.submit()">
+            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+          </select>
+        </div>
+
+        <!-- Submit & Verified Toggle -->
+        <div style="display: flex; gap: 12px; align-items: center; justify-content: flex-end;">
+          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" name="verified_only" value="1" {% if verified_only %}checked{% endif %} onchange="this.form.submit()">
+            <span>{% t "Wauzaji Walioidhinishwa Tu" "Verified Merchants Only" %}</span>
+          </label>
+          <button type="submit" class="mp-btn-post" style="border: none; cursor: pointer; height: 48px; border-radius: 8px;">
+            {% t "Chuja" "Apply Filters" %}
+          </button>
+        </div>
+
+      </div>
+    </form>
+
+    <!-- Listings Grid -->
+    {% if listings %}
+      <div class="mp-grid">
+        {% for item in listings %}
+          <a href="{% url 'marketplace:listing_detail' slug=item.slug %}" class="mp-card">
+            <div class="mp-card-img-wrap">
+              {% if item.cover_image %}
+                <img src="{{ item.cover_image }}" alt="{{ item.title }}" class="mp-card-img" loading="lazy">
+              {% else %}
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">
+                  Product Image
+                </div>
+              {% endif %}
+
+              {% if item.seller.is_verified %}
+                <div class="mp-badge-verified">
+                  Verified Merchant
+                </div>
+              {% endif %}
+
+              <div class="mp-badge-condition">
+                {{ item.get_condition_display }}
+              </div>
+            </div>
+
+            <div class="mp-card-body">
+              <div class="mp-card-price">{{ item.price|tzs }}</div>
+              <h3 class="mp-card-title">{{ item.title }}</h3>
+
+              <div class="mp-card-meta">
+                <span class="mp-card-location">{{ item.ward }}</span>
+                <span>{{ item.seller.business_name|truncatechars:18 }}</span>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj.has_other_pages %}
+        <div style="display: flex; justify-content: center; gap: 8px; margin: 30px 0;">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&category={{ selected_category.slug|default:'' }}&district={{ district }}&ward={{ ward }}&sort={{ sort_by }}" class="mp-lang-toggle" style="padding: 8px 16px;">
+              ← {% t "Iliyotangulia" "Previous" %}
+            </a>
+          {% endif %}
+
+          <span style="display: flex; align-items: center; padding: 0 12px; font-weight: 600; font-size: 0.9rem;">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+          </span>
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&category={{ selected_category.slug|default:'' }}&district={{ district }}&ward={{ ward }}&sort={{ sort_by }}" class="mp-lang-toggle" style="padding: 8px 16px;">
+              {% t "Inayofuata" "Next" %} →
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div style="background: white; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 48px; text-align: center;">
+        <h3 style="margin: 0 0 8px; font-size: 1.2rem;">{% t "Hakuna bidhaa inayolingana na utafutaji wako" "No matching listings found" %}</h3>
+        <p style="color: #64748b; margin: 0 0 20px; font-size: 0.9rem;">
+          {% t "Jaribu kutafuta kwa neno lingine au badilisha kichujio cha eneo na kategoria." "Try broader search keywords or modify your district and ward filters." %}
+        </p>
+        <a href="{% url 'marketplace:listing_list' %}" class="mp-btn-post" style="display: inline-flex;">
+          {% t "Onyesha Bidhaa Zote" "Show All Listings" %}
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

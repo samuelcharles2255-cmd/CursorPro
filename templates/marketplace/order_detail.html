@@ -1,0 +1,103 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Taarifa ya Oda" "Order Details" %} #{{ order.order_number }} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 760px; margin: 30px auto;">
+  
+  <div style="margin-bottom: 16px;">
+    <a href="{% url 'marketplace:order_list' %}" style="color: #64748b; text-decoration: none; font-size: 0.88rem;">
+      ← {% t "Rudi kwenye Orodha ya Oda" "Back to My Orders" %}
+    </a>
+  </div>
+
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 28px 24px; box-shadow: var(--shadow);">
+    
+    <!-- Status Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+      <div>
+        <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.6rem; font-weight: 700; margin: 0 0 4px; color: #0f172a;">
+          {% t "Oda #" "Order #" %}{{ order.order_number }}
+        </h1>
+        <div style="font-size: 0.85rem; color: #64748b;">
+          {% t "Iliwekwa:" "Placed on:" %} {{ order.created_at|date:"d M Y, H:i" }}
+        </div>
+      </div>
+
+      <div style="background: #ccfbf1; color: #0f766e; font-size: 0.85rem; font-weight: 800; padding: 6px 12px; border-radius: 20px;">
+        {{ order.get_status_display }}
+      </div>
+    </div>
+
+    <!-- Items List -->
+    <div style="margin-bottom: 24px;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">
+        {% t "Bidhaa Zilizomo (Items):" "Ordered Items:" %}
+      </h3>
+      <div style="border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+        {% for item in order.items.all %}
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
+            <div>
+              <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
+                {{ item.product_title }}
+              </div>
+              <div style="font-size: 0.8rem; color: #64748b;">
+                {{ item.quantity }} x {{ item.unit_price|tzs }}
+              </div>
+            </div>
+            <div style="font-weight: 800; color: #0f766e;">
+              {{ item.total_price|tzs }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 1.2rem; font-weight: 800; margin-top: 12px; padding: 0 8px;">
+        <span>{% t "Jumla ya Malipo:" "Total:" %}</span>
+        <span style="color: #0f766e; font-size: 1.4rem;">{{ order.total_amount|tzs }}</span>
+      </div>
+    </div>
+
+    <!-- Fulfillment & Contact Details -->
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0 0 10px; color: #0f172a;">
+        {% t "Maelezo ya Kupokea Bidhaa:" "Fulfillment Details:" %}
+      </h3>
+      <div style="font-size: 0.9rem; line-height: 1.6; color: #334155;">
+        <div><strong>{% t "Njia:" "Method:" %}</strong> {{ order.get_fulfillment_type_display }}</div>
+        <div><strong>{% t "Mpokeaji:" "Recipient:" %}</strong> {{ order.customer_name }} ({{ order.customer_phone }})</div>
+        {% if order.delivery_ward %}
+          <div><strong>{% t "Eneo la Kuletewa:" "Delivery Area:" %}</strong> {{ order.delivery_ward }}, Dar es Salaam</div>
+        {% endif %}
+        {% if order.delivery_address %}
+          <div><strong>{% t "Mtaa / Jengo:" "Address:" %}</strong> {{ order.delivery_address }}</div>
+        {% endif %}
+        {% if order.notes %}
+          <div><strong>{% t "Maagizo ya ziada:" "Notes:" %}</strong> {{ order.notes }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Merchant Store & Directions -->
+    <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0 0 10px; color: #0f172a;">
+        {% t "Duka Lililopokea Oda (Merchant):" "Store Details:" %} {{ order.business.business_name }}
+      </h3>
+      <div style="font-size: 0.88rem; color: #475569; line-height: 1.6; margin-bottom: 12px;">
+        <div><strong>{% t "Wodi / Eneo:" "Location:" %}</strong> {{ order.business.ward }} ({{ order.business.get_district_display }})</div>
+        <div><strong>{% t "Maelekezo ya Duka:" "Store Directions:" %}</strong> {{ order.business.landmark_directions|default:order.business.street_address|default:"Kariakoo Commercial Belt" }}</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="https://wa.me/{{ order.business.clean_whatsapp }}" target="_blank" rel="noopener" class="mp-btn-post" style="background: #25d366; font-size: 0.85rem; border: none;">
+          WhatsApp Muuzaji
+        </a>
+        <a href="tel:{{ order.business.phone_number }}" class="mp-btn-post" style="background: #0f172a; font-size: 0.85rem; border: none;">
+          Piga Simu ({{ order.business.phone_number }})
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

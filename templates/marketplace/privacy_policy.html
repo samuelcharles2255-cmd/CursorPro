@@ -1,0 +1,78 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Sera ya Faragha (Tanzania PDPA 2022)" "Privacy Policy (Tanzania PDPA 2022)" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 800px; margin: 30px auto;">
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 36px 30px; box-shadow: var(--shadow-sm); line-height: 1.7; color: #334155;">
+    
+    <div style="border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 24px;">
+      <span style="background: #ccfbf1; color: #0f766e; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 12px;">
+        PDPA 2022 COMPLIANT · TANZANIA
+      </span>
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2rem; font-weight: 700; margin: 12px 0 6px; color: #0f172a;">
+        {% t "Sera ya Faragha na Ulinzi wa Taarifa Binafsi" "Privacy Policy & Personal Data Protection" %}
+      </h1>
+      <div style="font-size: 0.85rem; color: #64748b;">
+        {% t "Kulingana na Sheria ya Ulinzi wa Taarifa Binafsi ya Tanzania, 2022 (Personal Data Protection Act No. 11 of 2022)" "In accordance with the Tanzania Personal Data Protection Act, 2022 (Act No. 11 of 2022)" %}
+      </div>
+    </div>
+
+    <section style="margin-bottom: 24px;">
+      <h2 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+        1. {% t "Taarifa Tunazokusanya" "Data We Collect" %}
+      </h2>
+      <p>
+        {% t "Ili kukuwezesha kutumia Atrium Marketplace Dar es Salaam, tunakusanya na kusindika:" "To provide our services across Dar es Salaam, Atrium Marketplace processes:" %}
+      </p>
+      <ul>
+        <li><strong>{% t "Namba ya Simu na Uthibitisho wa OTP:" "Phone Number & SMS Verification:" %}</strong> {% t "Inatumika kukutambua na kuzuia akaunti ghushi au za utapeli." "Used for secure sign-in and anti-fraud authentication." %}</li>
+        <li><strong>{% t "Wasifu wa Biashara na Nyaraka za Uhakiki (Wauzaji):" "Business Profiles & Verification Documents (Sellers):" %}</strong> {% t "Picha za kitambulisho cha NIDA, TIN au Mpiga Kura kwa ajili ya kuthibitisha wauzaji pekee." "Identification credentials (NIDA, Voter ID, TIN) solely for merchant verification." %}</li>
+        <li><strong>{% t "Eneo na Wodi ya Dar es Salaam:" "Location & Ward in Dar es Salaam:" %}</strong> {% t "Kuwezesha wateja kupata maelekezo ya duka na huduma za uletaji (Courier/Bodaboda)." "Enabling local store discovery and accurate pickup/delivery." %}</li>
+        <li><strong>{% t "Ujumbe na Oda:" "Messages & Orders:" %}</strong> {% t "Kuwezesha mawasiliano salama kati ya mnunuzi na muuzaji." "Direct communication between buyers and merchants." %}</li>
+      </ul>
+    </section>
+
+    <section style="margin-bottom: 24px;">
+      <h2 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+        2. {% t "Haki Zako Chini ya PDPA 2022" "Your Rights under Tanzania PDPA 2022" %}
+      </h2>
+      <p>
+        {% t "Chini ya kifungu cha 33 na 34 cha Sheria ya PDPA 2022 ya Tanzania, una haki zifuatazo:" "Under sections 33 & 34 of the Tanzania Personal Data Protection Act (2022), you hold the rights to:" %}
+      </p>
+      <ul>
+        <li><strong>{% t "Haki ya Kupata Data Yako (Right of Access):" "Right to Access:" %}</strong> {% t "Unaweza kupakua nakala kamili ya taarifa zako zote wakati wowote." "You can request or download an export of your personal data." %}</li>
+        <li><strong>{% t "Haki ya Kurekebisha Data (Right to Rectification):" "Right to Rectification:" %}</strong> {% t "Unaweza kubadilisha taarifa za wasifu wako au namba yako ya simu." "You may modify or correct your storefront and account details." %}</li>
+        <li><strong>{% t "Haki ya Kufutwa (Right to Erasure / Be Forgotten):" "Right to Erasure:" %}</strong> {% t "Una haki ya kuomba akaunti yako na taarifa zote zifutwe kabisa kwenye mfumo wetu." "You can request complete deletion and anonymization of your data." %}</li>
+      </ul>
+    </section>
+
+    <section style="margin-bottom: 24px;">
+      <h2 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+        3. {% t "Usalama wa Data (Data Security)" "Security & Encryption" %}
+      </h2>
+      <p>
+        {% t "Tunatumia usimbaji fiche (encryption), itifaki ya HTTPS kwenye mtandao wote, sera za kuzuia majaribio ya OTP (rate limiting), na ukaguzi wa mara kwa mara wa usalama (Audit Logs)." "We employ HTTPS everywhere, cryptographic password hashing, strict SMS OTP rate limits, and tamper-resistant audit logs for administrative actions." %}
+      </p>
+    </section>
+
+    {% if user.is_authenticated %}
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
+        <div>
+          <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">
+            {% t "Pakua Nakala ya Data Yako (Data Portability)" "Download Your Data Copy (JSON)" %}
+          </div>
+          <div style="font-size: 0.8rem; color: #64748b;">
+            {% t "Pata faili kamili la wasifu wako, oda na vipendwa." "Export your profile, orders, and favorites in JSON format." %}
+          </div>
+        </div>
+        <a href="{% url 'marketplace:data_export' %}" class="mp-btn-post" style="padding: 10px 18px; font-size: 0.88rem;">
+          {% t "Pakua Data Yangu (JSON)" "Export Data" %}
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

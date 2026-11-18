@@ -1,0 +1,174 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block content %}
+<!-- Hero Section (Atrium Design System) -->
+<section style="background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 48px 0 40px;">
+  <div class="mp-container">
+    <div style="max-width: 720px;">
+      <span style="display: inline-block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #0f766e; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 4px 10px; border-radius: 20px; margin-bottom: 16px;">
+        {% t "Dar es Salaam Verified Marketplace" "Dar es Salaam Verified Marketplace" %}
+      </span>
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2.8rem; font-weight: 700; margin: 0 0 12px; color: #111827; line-height: 1.15; letter-spacing: -0.5px;">
+        {% t "Nunua na Uza kwa Wauzaji Walioidhinishwa Dar es Salaam" "Buy & Sell with Verified Merchants in Dar es Salaam" %}
+      </h1>
+      <p style="font-size: 1.05rem; color: #4b5563; margin: 0 0 24px; line-height: 1.6;">
+        {% t "Ungana moja kwa moja na maduka na wamiliki wa biashara Kariakoo, Sinza, Mwenge, Masaki na wodi zote za jiji." "Connect directly with verified store owners in Kariakoo, Sinza, Mwenge, Masaki, and across all municipal wards." %}
+      </p>
+
+      <!-- Commercial Districts Tags -->
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span style="font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
+          {% t "Maeneo:" "Districts:" %}
+        </span>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Kariakoo" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Kariakoo</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Sinza" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Sinza / Kinondoni</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Mwenge" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Mwenge / Mlimani</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Masaki" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Masaki & Mikocheni</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Posta" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Posta / Kisutu</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Category Horizontal Pill Bar -->
+<div style="background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 12px 0;">
+  <div class="mp-container">
+    <div class="mp-cat-bar" style="border-bottom: none; padding: 0;">
+      <a href="{% url 'marketplace:listing_list' %}" class="mp-cat-pill is-active">
+        {% t "Zote" "All Categories" %}
+      </a>
+      {% for cat in categories %}
+        <a href="{% url 'marketplace:listing_list' %}?category={{ cat.slug }}" class="mp-cat-pill">
+          {% if request.session.lang == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_sw }}{% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="mp-container" style="margin-top: 36px;">
+
+  <!-- Featured Categories Grid -->
+  <div style="margin-bottom: 40px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px;">
+      <h2 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: #111827;">
+        {% t "Kategoria Kuu za Biashara" "Featured Marketplace Categories" %}
+      </h2>
+      <a href="{% url 'marketplace:listing_list' %}" style="color: #0f766e; text-decoration: none; font-weight: 600; font-size: 0.88rem;">
+        {% t "Tazama Zote →" "Explore All Categories →" %}
+      </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+      {% for cat in featured_categories %}
+        <a href="{% url 'marketplace:listing_list' %}?category={{ cat.slug }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 16px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: border-color 0.15s, box-shadow 0.15s;" onmouseover="this.style.borderColor='#0f766e'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+          <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">
+            {% t "Kategoria" "Category" %}
+          </div>
+          <span style="font-weight: 700; font-size: 1rem; color: #0f172a; line-height: 1.3;">
+            {% if request.session.lang == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_sw }}{% endif %}
+          </span>
+          <span style="font-size: 0.8rem; color: #0f766e; margin-top: 8px; font-weight: 600;">
+            {% t "Tazama bidhaa →" "View items →" %}
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Trust Highlights Banner -->
+  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
+    <div>
+      <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 4px;">
+        {% t "Mawasiliano ya Moja kwa Moja" "Direct Merchant Contact" %}
+      </div>
+      <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+        {% t "Wasiliana na wauzaji kupitia WhatsApp na simu bila madalali." "Engage directly with business owners via phone, WhatsApp, or in-app chat." %}
+      </div>
+    </div>
+
+    <div>
+      <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 4px;">
+        {% t "Uhakiki wa Biashara na NIDA/TIN" "Verified Business Credentials" %}
+      </div>
+      <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+        {% t "Wafanyabiashara wanathibitishwa na timu yetu kwa vitambulisho rasmi." "Storefronts are vetted with verified government identification and commercial records." %}
+      </div>
+    </div>
+
+    <div>
+      <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 4px;">
+        {% t "Huduma za Kufika na Kuletewa" "Local Pickup & Delivery" %}
+      </div>
+      <div style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+        {% t "Pata maelekezo kamili ya duka au chagua kuletewa Dar es Salaam." "Access clear store directions for in-person pickup or arrange local dispatch." %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Active Listings Feed -->
+  <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px;">
+    <div>
+      <h2 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0 0 4px; color: #111827;">
+        {% t "Bidhaa za Hivi Karibuni" "Recent Marketplace Listings" %}
+      </h2>
+      <span style="font-size: 0.85rem; color: #64748b;">
+        {% t "Matangazo mapya yaliyowekwa na wauzaji wa Dar es Salaam" "Freshly added products from verified regional suppliers" %}
+      </span>
+    </div>
+    <a href="{% url 'marketplace:listing_list' %}" style="color: #0f766e; text-decoration: none; font-weight: 600; font-size: 0.88rem;">
+      {% t "Tazama Zote →" "View All Listings →" %}
+    </a>
+  </div>
+
+  {% if recent_listings %}
+    <div class="mp-grid">
+      {% for item in recent_listings %}
+        <a href="{% url 'marketplace:listing_detail' slug=item.slug %}" class="mp-card">
+          <div class="mp-card-img-wrap">
+            {% if item.cover_image %}
+              <img src="{{ item.cover_image }}" alt="{{ item.title }}" class="mp-card-img" loading="lazy">
+            {% else %}
+              <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #94a3b8; font-weight: 500;">
+                Product Image
+              </div>
+            {% endif %}
+
+            {% if item.seller.is_verified %}
+              <div class="mp-badge-verified">
+                Verified Merchant
+              </div>
+            {% endif %}
+
+            <div class="mp-badge-condition">
+              {{ item.get_condition_display }}
+            </div>
+          </div>
+
+          <div class="mp-card-body">
+            <div class="mp-card-price">{{ item.price|tzs }}</div>
+            <h3 class="mp-card-title">{{ item.title }}</h3>
+
+            <div class="mp-card-meta">
+              <span class="mp-card-location">{{ item.ward }}</span>
+              <span>{{ item.seller.business_name|truncatechars:18 }}</span>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="background: white; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 48px; text-align: center; margin-bottom: 30px;">
+      <h3 style="margin: 0 0 8px; font-size: 1.2rem;">{% t "Hakuna matangazo yaliyopo kwa sasa" "No active listings yet" %}</h3>
+      <p style="color: #64748b; margin: 0 0 20px; font-size: 0.9rem;">
+        {% t "Kuwa wa kwanza kutangaza bidhaa yako na kuwafikia wateja kote Dar es Salaam." "Publish your products and reach verified customers across Dar es Salaam." %}
+      </p>
+      <a href="{% url 'marketplace:seller_listing_create' %}" class="mp-btn-post" style="display: inline-flex;">
+        {% t "Weka Tangazo la Kwanza" "Post the First Listing" %}
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

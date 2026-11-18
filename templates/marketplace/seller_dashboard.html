@@ -1,0 +1,253 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Dashibodi ya Muuzaji" "Merchant Dashboard" %} - {{ business.business_name }}{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="margin-top: 28px;">
+
+  <!-- Header Banner -->
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div class="mp-seller-avatar" style="width: 60px; height: 60px; border-radius: 8px; font-weight: 800; color: #0f766e;">
+        {% if business.logo %}
+          <img src="{{ business.logo.url }}" alt="{{ business.business_name }}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">
+        {% else %}
+          {{ business.business_name|slice:":2"|upper }}
+        {% endif %}
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: #0f172a;">
+            {{ business.business_name }}
+          </h1>
+          {% if business.is_verified %}
+            <span style="background: #f0fdf4; color: #166534; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; border: 1px solid #bbf7d0;">
+              Verified Merchant
+            </span>
+          {% else %}
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; border: 1px solid #fde68a;">
+              Unverified
+            </span>
+          {% endif %}
+        </div>
+        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
+          {{ business.ward }}, Dar es Salaam · Phone: {{ business.phone_number }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Action CTAs -->
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <a href="{% url 'marketplace:seller_store_detail' slug=business.slug %}" target="_blank" class="mp-lang-toggle" style="padding: 8px 14px;">
+        {% t "Tazama Duka" "View Storefront" %}
+      </a>
+      {% if not business.is_verified %}
+        <a href="{% url 'marketplace:seller_verification' %}" class="mp-lang-toggle" style="background: #fef3c7; color: #92400e; border-color: #fde68a; padding: 8px 14px;">
+          {% t "Thibitisha Duka" "Verify Merchant ID" %}
+        </a>
+      {% endif %}
+      <a href="{% url 'marketplace:seller_listing_create' %}" class="mp-btn-post">
+        {% t "+ Tangaza Bidhaa" "+ Add Product" %}
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="mp-stats-row">
+    <div class="mp-stat-card">
+      <div class="mp-stat-label">{% t "Matangazo Hewani" "Active Listings" %}</div>
+      <div class="mp-stat-val">{{ active_count }}</div>
+    </div>
+    <div class="mp-stat-card">
+      <div class="mp-stat-label">{% t "Jumla ya Watazamaji" "Total Views" %}</div>
+      <div class="mp-stat-val">{{ business.total_views }}</div>
+    </div>
+    <div class="mp-stat-card">
+      <div class="mp-stat-label">{% t "Mawasiliano" "Customer Contacts" %}</div>
+      <div class="mp-stat-val">{{ business.total_contacts }}</div>
+    </div>
+    <div class="mp-stat-card">
+      <div class="mp-stat-label">{% t "Oda za Wateja" "Orders Received" %}</div>
+      <div class="mp-stat-val">{{ orders.count }}</div>
+    </div>
+  </div>
+
+  <!-- Listings Management Table -->
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+      <h2 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem; font-weight: 700; margin: 0; color: #0f172a;">
+        {% t "Matangazo Yangu" "My Product Inventory" %} ({{ listings.count }})
+      </h2>
+      <a href="{% url 'marketplace:seller_listing_create' %}" style="color: #0f766e; font-weight: 600; font-size: 0.88rem; text-decoration: none;">
+        {% t "+ Weka Bidhaa Mpya" "+ Add New Product" %}
+      </a>
+    </div>
+
+    {% if listings %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">
+              <th style="padding: 10px 8px;">{% t "Picha" "Photo" %}</th>
+              <th style="padding: 10px 8px;">{% t "Jina la Bidhaa" "Title" %}</th>
+              <th style="padding: 10px 8px;">{% t "Bei" "Price" %}</th>
+              <th style="padding: 10px 8px;">{% t "Hali" "Status" %}</th>
+              <th style="padding: 10px 8px;">{% t "Watazamaji" "Views" %}</th>
+              <th style="padding: 10px 8px;">{% t "Upya" "Renewal" %}</th>
+              <th style="padding: 10px 8px; text-align: right;">{% t "Vitendo" "Actions" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in listings %}
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 12px 8px; width: 60px;">
+                  {% if item.cover_image %}
+                    <img src="{{ item.cover_image }}" alt="" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+                  {% else %}
+                    <div style="width: 50px; height: 50px; border-radius: 6px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #94a3b8;">Item</div>
+                  {% endif %}
+                </td>
+                <td style="padding: 12px 8px; font-weight: 600;">
+                  <a href="{% url 'marketplace:listing_detail' slug=item.slug %}" style="color: inherit; text-decoration: none;">
+                    {{ item.title }}
+                  </a>
+                  <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">
+                    {{ item.ward }} · {{ item.created_at|date:"d M Y" }}
+                  </div>
+                </td>
+                <td style="padding: 12px 8px; font-weight: 700; color: #0f766e;">
+                  {{ item.price|tzs }}
+                </td>
+                <td style="padding: 12px 8px;">
+                  {% if item.status == 'active' %}
+                    <span style="background: #f0fdf4; color: #166534; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                      Active
+                    </span>
+                  {% elif item.status == 'sold' %}
+                    <span style="background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+                      Sold
+                    </span>
+                  {% else %}
+                    <span style="background: #fee2e2; color: #991b1b; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+                      {{ item.status }}
+                    </span>
+                  {% endif %}
+                </td>
+                <td style="padding: 12px 8px; color: #64748b; font-size: 0.85rem;">
+                  {{ item.views_count }} views · {{ item.contact_clicks_count }} leads
+                </td>
+                <td style="padding: 12px 8px;">
+                  <form method="post" action="{% url 'marketplace:seller_listing_renew' pk=item.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="mp-lang-toggle" style="cursor: pointer; background: #f0fdf4; color: #166534; border-color: #bbf7d0; font-size: 0.75rem; padding: 4px 10px;" title="Reset 30-day window & bump to top">
+                      Renew Listing
+                    </button>
+                  </form>
+                </td>
+                <td style="padding: 12px 8px; text-align: right; white-space: nowrap;">
+                  <a href="{% url 'marketplace:seller_listing_edit' pk=item.pk %}" class="mp-lang-toggle" style="padding: 5px 10px; font-size: 0.8rem;">
+                    Edit
+                  </a>
+                  {% if item.status == 'active' %}
+                    <a href="{% url 'marketplace:seller_listing_mark_sold' pk=item.pk %}" class="mp-lang-toggle" style="padding: 5px 10px; font-size: 0.8rem;">
+                      Mark Sold
+                    </a>
+                  {% endif %}
+                  <a href="{% url 'marketplace:seller_listing_delete' pk=item.pk %}" class="mp-lang-toggle" style="padding: 5px 10px; font-size: 0.8rem; color: #991b1b; border-color: #fecaca;">
+                    Delete
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 36px; color: #64748b;">
+        {% t "Bado hujaweka bidhaa zozote kwenye duka hili." "No listings posted to your storefront yet." %}
+        <div style="margin-top: 14px;">
+          <a href="{% url 'marketplace:seller_listing_create' %}" class="mp-btn-post">
+            {% t "+ Weka Bidhaa ya Kwanza" "+ Add First Product" %}
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Customer Orders Received -->
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 30px;">
+    <h2 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem; font-weight: 700; margin: 0 0 16px; color: #0f172a;">
+      {% t "Oda Zilizopokelewa" "Customer Orders" %} ({{ orders.count }})
+    </h2>
+
+    {% if orders %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.8rem; text-transform: uppercase;">
+              <th style="padding: 10px 8px;">Order #</th>
+              <th style="padding: 10px 8px;">Customer</th>
+              <th style="padding: 10px 8px;">Fulfillment</th>
+              <th style="padding: 10px 8px;">Amount</th>
+              <th style="padding: 10px 8px;">Current Status</th>
+              <th style="padding: 10px 8px;">Update Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ord in orders %}
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 12px 8px; font-weight: 700;">
+                  <a href="{% url 'marketplace:order_detail' order_number=ord.order_number %}" style="color: #0f766e; text-decoration: none;">
+                    #{{ ord.order_number }}
+                  </a>
+                  <div style="font-size: 0.75rem; color: #64748b;">{{ ord.created_at|date:"d M Y, H:i" }}</div>
+                </td>
+                <td style="padding: 12px 8px;">
+                  <div style="font-weight: 600;">{{ ord.customer_name }}</div>
+                  <div style="font-size: 0.8rem; color: #64748b;">Phone: {{ ord.customer_phone }}</div>
+                </td>
+                <td style="padding: 12px 8px;">
+                  {{ ord.get_fulfillment_type_display }}
+                  {% if ord.delivery_ward %}
+                    <div style="font-size: 0.78rem; color: #64748b;">Ward: {{ ord.delivery_ward }}</div>
+                  {% endif %}
+                </td>
+                <td style="padding: 12px 8px; font-weight: 700; color: #0f766e;">
+                  {{ ord.total_amount|tzs }}
+                </td>
+                <td style="padding: 12px 8px;">
+                  <span style="background: #f1f5f9; color: #334155; font-size: 0.78rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+                    {{ ord.get_status_display }}
+                  </span>
+                </td>
+                <td style="padding: 12px 8px;">
+                  <form method="post" action="{% url 'marketplace:seller_order_status' pk=ord.pk %}" style="display: flex; gap: 6px;">
+                    {% csrf_token %}
+                    <select name="status" class="form-select" style="min-height: 34px; padding: 2px 8px; font-size: 0.82rem;">
+                      <option value="pending" {% if ord.status == 'pending' %}selected{% endif %}>Pending</option>
+                      <option value="confirmed" {% if ord.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                      <option value="ready" {% if ord.status == 'ready' %}selected{% endif %}>Ready for Pickup</option>
+                      <option value="delivering" {% if ord.status == 'delivering' %}selected{% endif %}>Out for Delivery</option>
+                      <option value="completed" {% if ord.status == 'completed' %}selected{% endif %}>Completed</option>
+                      <option value="cancelled" {% if ord.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                    <button type="submit" class="mp-lang-toggle" style="cursor: pointer; padding: 4px 10px;">
+                      Update
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 28px; color: #64748b;">
+        {% t "Bado hujapokea oda yoyote." "No customer orders received yet." %}
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

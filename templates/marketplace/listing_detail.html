@@ -1,0 +1,285 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{{ listing.title }} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="margin-top: 24px;">
+
+  <!-- Breadcrumb -->
+  <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+    <a href="{% url 'marketplace:home' %}" style="color: inherit; text-decoration: none;">{% t "Marketplace" "Marketplace" %}</a> &gt;
+    <a href="{% url 'marketplace:listing_list' %}?category={{ listing.category.slug }}" style="color: inherit; text-decoration: none;">
+      {% if request.session.lang == 'en' %}{{ listing.category.name_en }}{% else %}{{ listing.category.name_sw }}{% endif %}
+    </a> &gt;
+    <span style="color: #0f172a; font-weight: 600;">{{ listing.title|truncatechars:40 }}</span>
+  </div>
+
+  <div class="mp-detail-layout">
+
+    <!-- Left Column: Gallery & Details -->
+    <div>
+      <!-- 8-Image Gallery -->
+      <div class="mp-gallery">
+        {% if images %}
+          <img id="mainImage" src="{{ images.0.image.url }}" alt="{{ listing.title }}" class="mp-gallery-main">
+          {% if images.count > 1 %}
+            <div class="mp-gallery-thumbs">
+              {% for img in images %}
+                <img 
+                  src="{{ img.image.url }}" 
+                  alt="Thumbnail {{ forloop.counter }}" 
+                  class="mp-thumb {% if forloop.first %}is-active{% endif %}"
+                  onclick="changeGalleryImage('{{ img.image.url }}', this)"
+                >
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="mp-gallery-main" style="display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #94a3b8; font-weight: 500;">
+            Product Photography
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Listing Information Box -->
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
+          <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2.2rem; font-weight: 700; margin: 0; color: #111827; line-height: 1.2;">
+            {{ listing.title }}
+          </h1>
+
+          <!-- Favorite Button -->
+          <form method="post" action="{% url 'marketplace:favorite_toggle' pk=listing.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="mp-lang-toggle" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem;" title="Save listing">
+              <span>{% if is_favorited %}Saved{% else %}Save{% endif %}</span>
+              <span style="color: #64748b;">({{ listing.favorites_count }})</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Price Tag -->
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px;">
+          <span style="font-size: 2rem; font-weight: 800; color: #0f766e;">{{ listing.price|tzs }}</span>
+          {% if listing.is_negotiable %}
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.8rem; font-weight: 600; padding: 3px 8px; border-radius: 4px;">
+              {% t "Bei inamaongezi" "Negotiable" %}
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Key Badges -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;">
+          <span style="background: #f1f5f9; color: #334155; padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+            {{ listing.get_condition_display }}
+          </span>
+          <span style="background: #f1f5f9; color: #334155; padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+            {{ listing.ward }}, Dar es Salaam
+          </span>
+          {% if listing.pickup_available %}
+            <span style="background: #f0fdf4; color: #166534; padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; border: 1px solid #bbf7d0;">
+              {% t "Kuchukua dukani kuko wazi" "Store Pickup Available" %}
+            </span>
+          {% endif %}
+          {% if listing.delivery_available %}
+            <span style="background: #f8fafc; color: #0369a1; padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; border: 1px solid #e2e8f0;">
+              {% t "Huduma ya kuletewa inapatikana" "Regional Delivery Available" %}
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Category-Specific Attributes Table -->
+        {% if listing.attributes %}
+          <div style="margin-bottom: 24px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+            <h3 style="font-size: 1rem; font-weight: 700; margin: 0 0 14px; color: #0f172a;">
+              {% t "Sifa za Bidhaa" "Product Specifications" %}
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+              {% for key, val in listing.attributes.items %}
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 6px;">
+                  <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">{{ key|cut:"_" }}</div>
+                  <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-top: 2px;">{{ val }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Description -->
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-bottom: 24px;">
+          <h3 style="font-size: 1rem; font-weight: 700; margin: 0 0 12px; color: #0f172a;">
+            {% t "Maelezo ya Kina" "Overview & Specifications" %}
+          </h3>
+          <div style="color: #334155; line-height: 1.7; white-space: pre-line; font-size: 0.95rem;">
+            {{ listing.description }}
+          </div>
+        </div>
+
+        <!-- Meta info -->
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 0.82rem; color: #64748b; display: flex; justify-content: space-between;">
+          <span>{% t "Tarehe ya tangazo:" "Listed:" %} {{ listing.created_at|date:"d M Y" }}</span>
+          <span>{{ listing.views_count }} {% t "watazamaji" "views" %}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Seller Profile & CTAs -->
+    <div>
+      <div class="mp-seller-box">
+        <div class="mp-seller-header">
+          <div class="mp-seller-avatar" style="border-radius: 8px;">
+            {% if seller.logo %}
+              <img src="{{ seller.logo.url }}" alt="{{ seller.business_name }}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">
+            {% else %}
+              <div style="font-size: 1.1rem; font-weight: 800; color: #0f766e;">{{ seller.business_name|slice:":2"|upper }}</div>
+            {% endif %}
+          </div>
+          <div style="flex: 1;">
+            <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a;">
+              {{ seller.business_name }}
+            </h2>
+            {% if seller.is_verified %}
+              <div style="color: #0f766e; font-size: 0.78rem; font-weight: 700; margin-top: 2px;">
+                Verified Merchant
+              </div>
+            {% else %}
+              <div style="color: #64748b; font-size: 0.78rem; margin-top: 2px;">
+                Dar es Salaam Merchant
+              </div>
+            {% endif %}
+            <div style="font-size: 0.82rem; color: #64748b; margin-top: 2px;">
+              {{ seller.ward }} ({{ seller.get_district_display }})
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct Actions -->
+        <!-- WhatsApp CTA with Click Tracker -->
+        <a 
+          href="{{ wa_link }}" 
+          target="_blank" 
+          rel="noopener"
+          class="mp-btn-cta mp-btn-whatsapp"
+          onclick="trackContact('{{ listing.slug }}')"
+        >
+          {% t "Wasiliana kwa WhatsApp" "Contact on WhatsApp" %}
+        </a>
+
+        <!-- Call Phone CTA -->
+        <a 
+          href="tel:{{ seller.phone_number }}" 
+          class="mp-btn-cta mp-btn-call"
+          onclick="trackContact('{{ listing.slug }}')"
+        >
+          {% t "Piga Simu:" "Call Merchant:" %} {{ seller.phone_number }}
+        </a>
+
+        <!-- In-app Chat CTA -->
+        {% if user.is_authenticated %}
+          <a href="{% url 'marketplace:chat_start' listing_id=listing.pk %}" class="mp-btn-cta mp-btn-secondary">
+            {% t "Tuma Ujumbe (In-App Chat)" "Message Seller In-App" %}
+          </a>
+        {% else %}
+          <a href="{% url 'marketplace:phone_auth_request' %}" class="mp-btn-cta mp-btn-secondary">
+            {% t "Ingia Kutuma Ujumbe" "Sign in to Message" %}
+          </a>
+        {% endif %}
+
+        <!-- Order / Add to Cart Form -->
+        <form method="post" action="{% url 'marketplace:cart_add' pk=listing.pk %}" style="margin-top: 10px;">
+          {% csrf_token %}
+          <button type="submit" class="mp-btn-cta mp-btn-order">
+            {% t "Weka Oda / Ongeza Kikapu" "Add to Cart / Place Order" %}
+          </button>
+        </form>
+
+        <a href="{% url 'marketplace:seller_store_detail' slug=seller.slug %}" style="display: block; text-align: center; color: #0f766e; font-weight: 600; font-size: 0.88rem; text-decoration: none; margin-top: 14px;">
+          {% t "Tazama bidhaa zote za duka hili →" "View all products from this seller →" %}
+        </a>
+      </div>
+
+      <!-- Physical Directions Card -->
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 20px;">
+        <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0 0 10px; color: #0f172a;">
+          {% t "Maelekezo ya Kufika Dukani" "Storefront Location & Directions" %}
+        </h3>
+        
+        <div style="font-size: 0.9rem; color: #334155; line-height: 1.6; margin-bottom: 12px;">
+          {% if seller.landmark_directions %}
+            {{ seller.landmark_directions }}
+          {% else %}
+            {{ seller.street_address|default:seller.ward }}, Dar es Salaam.
+          {% endif %}
+        </div>
+
+        {% if seller.google_maps_url %}
+          <a href="{{ seller.google_maps_url }}" target="_blank" rel="noopener" class="mp-lang-toggle" style="display: inline-flex; align-items: center; background: #f0fdf4; color: #166534; border-color: #bbf7d0;">
+            {% t "Fungua Google Maps Pin" "Open Google Maps" %}
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Report Listing Link -->
+      <div style="text-align: center;">
+        <a href="{% url 'marketplace:report_listing' pk=listing.pk %}" style="font-size: 0.82rem; color: #94a3b8; text-decoration: underline;">
+          {% t "Ripoti tangazo hili" "Report this listing" %}
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Similar Products Recommendation Feed -->
+  {% if similar_listings %}
+    <div style="margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 30px;">
+      <h2 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0 0 16px; color: #111827;">
+        {% t "Bidhaa Zinazofanana" "Similar Verified Products" %}
+      </h2>
+      <div class="mp-grid">
+        {% for item in similar_listings %}
+          <a href="{% url 'marketplace:listing_detail' slug=item.slug %}" class="mp-card">
+            <div class="mp-card-img-wrap">
+              {% if item.cover_image %}
+                <img src="{{ item.cover_image }}" alt="{{ item.title }}" class="mp-card-img" loading="lazy">
+              {% else %}
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #94a3b8;">
+                  Product Image
+                </div>
+              {% endif %}
+            </div>
+            <div class="mp-card-body">
+              <div class="mp-card-price">{{ item.price|tzs }}</div>
+              <h3 class="mp-card-title">{{ item.title }}</h3>
+              <div class="mp-card-meta">
+                <span>{{ item.ward }}</span>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function changeGalleryImage(url, thumbElement) {
+    document.getElementById('mainImage').src = url;
+    document.querySelectorAll('.mp-thumb').forEach(t => t.classList.remove('is-active'));
+    thumbElement.classList.add('is-active');
+  }
+
+  function trackContact(slug) {
+    fetch(`/marketplace/listing/${slug}/contact-click/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      }
+    }).catch(err => console.log('Track error', err));
+  }
+</script>
+{% endblock %}

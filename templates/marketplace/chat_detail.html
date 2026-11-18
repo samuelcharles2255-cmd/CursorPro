@@ -1,0 +1,78 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}Chat - {{ conversation.business.business_name }} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 680px; margin: 24px auto;">
+  
+  <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+    <a href="{% url 'marketplace:chat_inbox' %}" style="color: #64748b; text-decoration: none; font-size: 0.88rem;">
+      ← {% t "Rudi kwenye Ujumbe" "Back to Messages" %}
+    </a>
+    <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">
+      {{ conversation.business.business_name }}
+    </div>
+  </div>
+
+  {% if conversation.listing %}
+    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">
+        {{ conversation.listing.title }} - <span style="color: #0f766e; font-weight: 800;">{{ conversation.listing.price|tzs }}</span>
+      </div>
+      <a href="{% url 'marketplace:listing_detail' slug=conversation.listing.slug %}" class="mp-lang-toggle" style="font-size: 0.75rem; padding: 4px 8px;">
+        {% t "Tazama Tangazo" "View Ad" %}
+      </a>
+    </div>
+  {% endif %}
+
+  <!-- Chat Box Container -->
+  <div class="mp-chat-box">
+    
+    <!-- Messages Scroll Area -->
+    <div class="mp-chat-messages" id="chatMessages">
+      {% for msg in chat_messages %}
+        <div class="mp-chat-bubble {% if msg.sender == user %}mp-chat-me{% else %}mp-chat-other{% endif %}">
+          {{ msg.text }}
+          <div style="font-size: 0.68rem; opacity: 0.75; text-align: right; margin-top: 3px;">
+            {{ msg.created_at|date:"H:i" }}
+          </div>
+        </div>
+      {% empty %}
+        <div style="text-align: center; color: #94a3b8; padding: 40px 10px; font-size: 0.9rem;">
+          {% t "Hakuna ujumbe bado. Anza mazungumzo na muuzaji sasa." "No messages yet. Send a greeting to begin chatting." %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Message Form -->
+    <form method="post" class="mp-chat-form">
+      {% csrf_token %}
+      <input 
+        type="text" 
+        name="message" 
+        required 
+        placeholder="{% t 'Andika ujumbe wako hapa...' 'Type your message here...' %}" 
+        class="form-control"
+        style="flex: 1;"
+        autocomplete="off"
+        id="chatInput"
+      >
+      <button type="submit" class="mp-btn-post" style="border: none; border-radius: 8px; cursor: pointer; padding: 0 18px;">
+        {% t "Tuma" "Send" %}
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-scroll chat box to bottom
+  const container = document.getElementById('chatMessages');
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+</script>
+{% endblock %}

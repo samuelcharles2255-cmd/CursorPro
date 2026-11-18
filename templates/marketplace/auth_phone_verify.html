@@ -1,0 +1,77 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Thibitisha Msimbo wa OTP" "Verify OTP Code" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 480px; margin: 40px auto;">
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 24px; box-shadow: var(--shadow);">
+    
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="font-size: 1.35rem; font-weight: 800; margin: 0 0 6px; color: #0f172a;">
+        {% t "Thibitisha Namba Yako ya Simu" "Verify Your Phone Number" %}
+      </h1>
+      <p style="font-size: 0.88rem; color: #64748b; margin: 0;">
+        {% t "Msimbo wa tarakimu 6 umetumwa kwa namba:" "A 6-digit code was sent to:" %}<br>
+        <strong style="color: #0f766e; font-size: 1.05rem;">{{ phone }}</strong>
+      </p>
+    </div>
+
+    <!-- Active OTP Notice / Auto-Fill in Test & Demo Mode -->
+    {% if active_otp %}
+      <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; text-align: center;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+          {% if live_sent %}
+            {% t "Msimbo wa Uthibitisho (SMS & Backup):" "Verification Code (SMS & Backup):" %}
+          {% else %}
+            {% t "Msimbo wako wa Uthibitisho (Instant Verification):" "Your Verification Code (Instant Verification):" %}
+          {% endif %}
+        </div>
+        <div style="font-size: 1.8rem; font-weight: 900; color: #15803d; letter-spacing: 4px; margin: 4px 0;">
+          {{ active_otp }}
+        </div>
+        <div style="font-size: 0.78rem; color: #166534; margin-top: 4px;">
+          {% t "Msimbo umewekwa kiotomatiki hapa chini. Bofya kitufe cha 'Thibitisha na Ingia' kuendelea." "The code has been auto-filled below. Click 'Verify & Continue' to proceed." %}
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'marketplace:phone_auth_verify' %}">
+      {% csrf_token %}
+      {{ form.phone_number }}
+      {{ form.user_type }}
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+          {% t "Jina Lako Kamili (Full Name):" "Your Full Name:" %}
+        </label>
+        {{ form.name }}
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <label for="id_otp_code" style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px; text-align: center;">
+          {% t "Ingiza Msimbo wa Namba 6:" "Enter 6-Digit Code:" %}
+        </label>
+        {{ form.otp_code }}
+        {% if form.otp_code.errors %}
+          <div style="color: #dc2626; font-size: 0.8rem; margin-top: 4px; text-align: center;">{{ form.otp_code.errors }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="mp-btn-cta mp-btn-order" style="margin-bottom: 16px;">
+        {% t "Thibitisha na Ingia (Verify & Continue) →" "Verify & Continue →" %}
+      </button>
+
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; padding-top: 10px; border-top: 1px solid #f1f5f9;">
+        <a href="{% url 'marketplace:phone_auth_request' %}" style="color: #64748b; text-decoration: none;">
+          ← {% t "Badili namba" "Change phone" %}
+        </a>
+        <a href="{% url 'web:login' %}" style="color: #0f766e; font-weight: 600; text-decoration: none;">
+          {% t "Ingia kwa Barua Pepe" "Sign in with Email" %} →
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

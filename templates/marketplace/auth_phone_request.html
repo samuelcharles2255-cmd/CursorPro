@@ -1,0 +1,88 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Ingia au Jisajili" "Sign In or Register" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 480px; margin: 48px auto;">
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 36px 28px; box-shadow: var(--shadow);">
+    
+    <div style="text-align: center; margin-bottom: 28px;">
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2rem; font-weight: 700; margin: 0 0 8px; color: #111827;">
+        {% t "Karibu Atrium Marketplace" "Welcome to Atrium Marketplace" %}
+      </h1>
+      <p style="font-size: 0.9rem; color: #64748b; margin: 0; line-height: 1.5;">
+        {% t "Ingiza namba yako ya simu kupokea msimbo wa uthibitisho (SMS OTP)." "Enter your mobile number to receive a secure SMS verification code (OTP)." %}
+      </p>
+    </div>
+
+    <form method="post" action="{% url 'marketplace:phone_auth_request' %}">
+      {% csrf_token %}
+
+      <!-- Account Type Selection -->
+      <div style="margin-bottom: 22px;">
+        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 8px;">
+          {% t "Chagua Aina ya Akaunti:" "Select Account Type:" %}
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <label style="border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8fafc; transition: border-color 0.15s;">
+            <input type="radio" name="user_type" value="buyer" checked style="accent-color: #0f766e;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem; color: #0f172a;">{% t "Mteja" "Customer" %}</div>
+              <div style="font-size: 0.75rem; color: #64748b;">{% t "Kununua bidhaa" "Shop items" %}</div>
+            </div>
+          </label>
+          <label style="border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8fafc; transition: border-color 0.15s;">
+            <input type="radio" name="user_type" value="seller" style="accent-color: #0f766e;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem; color: #0f172a;">{% t "Muuzaji" "Merchant" %}</div>
+              <div style="font-size: 0.75rem; color: #64748b;">{% t "Kuuza dukani" "Sell products" %}</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Phone Number Field -->
+      <div style="margin-bottom: 24px;">
+        <label for="id_phone_number" style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+          {% t "Namba ya Simu (Tanzania):" "Mobile Phone Number:" %}
+        </label>
+        {{ form.phone_number }}
+        <div style="font-size: 0.78rem; color: #64748b; margin-top: 5px;">
+          {% t "Mfano: 0712 345 678 au +255 712 345 678" "Example: 0712 345 678 or +255 712 345 678" %}
+        </div>
+        {% if form.phone_number.errors %}
+          <div style="color: #dc2626; font-size: 0.8rem; margin-top: 4px;">{{ form.phone_number.errors }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="mp-btn-cta mp-btn-order" style="margin-bottom: 16px;">
+        {% t "Tuma Msimbo wa Uthibitisho (SMS) →" "Send Verification Code (SMS) →" %}
+      </button>
+
+      <!-- Instant Testing Logins -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
+        <div style="font-size: 0.78rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; text-align: center;">
+          {% t "Majaribio ya Haraka (1-Click Instant Access):" "Quick Testing Access (1-Click Demo):" %}
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <a href="{% url 'marketplace:phone_auth_request' %}?demo=merchant" class="mp-lang-toggle" style="text-align: center; font-size: 0.8rem; font-weight: 600; padding: 8px; background: white; text-decoration: none;">
+            🏪 {% t "Duka la Apex Electronics" "Apex Electronics (Merchant)" %}
+          </a>
+          <a href="{% url 'marketplace:phone_auth_request' %}?demo=buyer" class="mp-lang-toggle" style="text-align: center; font-size: 0.8rem; font-weight: 600; padding: 8px; background: white; text-decoration: none;">
+            👤 {% t "Akaunti ya Mteja" "Customer Account" %}
+          </a>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid #f1f5f9; font-size: 0.85rem;">
+        <span style="color: #64748b;">{% t "Tayari una akaunti ya Atrium?" "Have an Atrium account?" %}</span>
+        <a href="{% url 'web:login' %}" style="color: #0f766e; font-weight: 600; text-decoration: none;">
+          {% t "Ingia kwa Barua Pepe" "Sign In with Email" %} →
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

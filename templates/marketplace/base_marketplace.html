@@ -1,0 +1,208 @@
+{% load static marketplace_tags %}
+<!DOCTYPE html>
+<html lang="{% if request.session.lang == 'en' %}en{% else %}sw{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  <title>{% block title %}{% t "Atrium Marketplace - Verified Products & Merchants" "Atrium Marketplace - Verified Products & Merchants" %}{% endblock %} · Atrium</title>
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="{% url 'marketplace:pwa_manifest' %}">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Atrium Marketplace">
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2.0">
+  <link rel="stylesheet" href="{% static 'marketplace/css/marketplace.css' %}?v=2.0">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="marketplace-body">
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="mp-navbar">
+    <div class="mp-container">
+      <div class="mp-navbar-inner">
+        
+        <!-- Brand Mark (Matching Atrium Design) -->
+        <a class="mp-brand" href="{% url 'marketplace:home' %}">
+          <span class="brand-mark" style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.6rem; color: #111827; letter-spacing: -0.5px;">Atrium<span style="color: #0f766e;">.</span></span>
+          <span class="mp-brand-badge" style="background: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase;">Marketplace</span>
+        </a>
+
+        <!-- Search Bar -->
+        <form class="mp-search-bar" action="{% url 'marketplace:listing_list' %}" method="get">
+          <input 
+            type="search" 
+            name="q" 
+            value="{{ request.GET.q|default:'' }}" 
+            placeholder="{% t 'Search verified products, electronics, vehicles, wards...' 'Search verified products, electronics, vehicles, wards...' %}" 
+            class="mp-search-input"
+            aria-label="Search marketplace"
+          >
+          <button type="submit" class="mp-search-btn" aria-label="Search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </form>
+
+        <!-- Right Actions -->
+        <div class="mp-nav-actions">
+          
+          <!-- Cross-link to Jobs Portal -->
+          <a href="{% url 'web:home' %}" class="mp-lang-toggle" style="background: transparent; border: none; color: #64748b; font-weight: 500;">
+            Jobs
+          </a>
+
+          <!-- Language Switcher -->
+          {% if request.session.lang == 'en' %}
+            <a href="{% url 'marketplace:set_language' %}?lang=sw" class="mp-lang-toggle" title="Switch to Swahili">Swahili</a>
+          {% else %}
+            <a href="{% url 'marketplace:set_language' %}?lang=en" class="mp-lang-toggle" title="Switch to English">English</a>
+          {% endif %}
+
+          <!-- Cart -->
+          <a href="{% url 'marketplace:cart_view' %}" class="mp-lang-toggle" title="Cart">
+            {% t "Kikapu" "Cart" %}
+          </a>
+
+          <!-- In-app Chat / Inbox -->
+          {% if user.is_authenticated %}
+            <a href="{% url 'marketplace:chat_inbox' %}" class="mp-lang-toggle" title="Messages">
+              {% t "Ujumbe" "Messages" %}
+            </a>
+          {% endif %}
+
+          <!-- Post Ad CTA -->
+          <a href="{% url 'marketplace:seller_listing_create' %}" class="mp-btn-post">
+            {% t "+ Tangaza" "+ Post Listing" %}
+          </a>
+
+          <!-- User Menu -->
+          {% if user.is_authenticated %}
+            {% if user.marketplace_business %}
+              <a href="{% url 'marketplace:seller_dashboard' %}" class="mp-lang-toggle" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">
+                {{ user.marketplace_business.business_name|truncatechars:18 }}
+              </a>
+            {% else %}
+              <a href="{% url 'marketplace:order_list' %}" class="mp-lang-toggle">
+                {% if user.name %}{{ user.name|truncatechars:18 }}{% else %}{% t "Akaunti Yangu" "My Account" %}{% endif %}
+              </a>
+            {% endif %}
+            <a href="{% url 'marketplace:auth_logout' %}" class="mp-lang-toggle" style="color: #991b1b; border-color: #fee2e2;">
+              {% t "Toka" "Sign out" %}
+            </a>
+          {% else %}
+            <a href="{% url 'marketplace:phone_auth_request' %}" class="mp-lang-toggle" style="background: #0f172a; color: #ffffff; border: none;">
+              {% t "Ingia" "Sign in" %}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div class="mp-container" style="margin-top: 14px;">
+      {% for message in messages %}
+        <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; font-weight: 500; font-size: 0.92rem; {% if message.tags == 'error' %}background:#fee2e2;color:#991b1b;border:1px solid #fecaca;{% elif message.tags == 'success' %}background:#dcfce7;color:#166534;border:1px solid #bbf7d0;{% else %}background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Content Area -->
+  <main class="mp-main" style="min-height: 72vh;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer (Matching Atrium Architecture) -->
+  <footer style="background: #ffffff; border-top: 1px solid #e2e8f0; color: #64748b; padding: 48px 0 32px; margin-top: 60px; font-size: 0.9rem;">
+    <div class="mp-container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; margin-bottom: 36px;">
+        <div>
+          <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+            Atrium<span style="color: #0f766e;">.</span>
+          </div>
+          <p style="margin: 0 0 12px; line-height: 1.6; font-size: 0.88rem; color: #64748b;">
+            {% t "Soko huru na jukwaa la kibiashara kwa wauzaji walioidhinishwa na wateja katika wodi zote za Dar es Salaam." "A verified commerce platform connecting trusted merchants and buyers across Dar es Salaam." %}
+          </p>
+          <div style="font-size: 0.8rem; color: #475569;">
+            {% t "Inazingatia Sheria ya Ulinzi wa Taarifa Binafsi ya Tanzania (PDPA 2022)." "Operating under the Tanzania Personal Data Protection Act (PDPA 2022)." %}
+          </div>
+        </div>
+
+        <div>
+          <h4 style="color: #0f172a; margin: 0 0 14px; font-size: 0.95rem; font-weight: 700;">{% t "Maeneo ya Biashara" "Commercial Districts" %}</h4>
+          <ul style="list-style: none; padding: 0; margin: 0; line-height: 2; font-size: 0.88rem;">
+            <li><a href="{% url 'marketplace:listing_list' %}?ward=Kariakoo" style="color: inherit; text-decoration: none;">Kariakoo Commercial Hub</a></li>
+            <li><a href="{% url 'marketplace:listing_list' %}?ward=Sinza" style="color: inherit; text-decoration: none;">Sinza / Kinondoni</a></li>
+            <li><a href="{% url 'marketplace:listing_list' %}?ward=Mwenge" style="color: inherit; text-decoration: none;">Mwenge & Mlimani</a></li>
+            <li><a href="{% url 'marketplace:listing_list' %}?ward=Masaki" style="color: inherit; text-decoration: none;">Masaki & Oysterbay</a></li>
+            <li><a href="{% url 'marketplace:listing_list' %}?ward=Posta" style="color: inherit; text-decoration: none;">Posta / Kisutu</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="color: #0f172a; margin: 0 0 14px; font-size: 0.95rem; font-weight: 700;">{% t "Huduma za Biashara" "Merchant Services" %}</h4>
+          <ul style="list-style: none; padding: 0; margin: 0; line-height: 2; font-size: 0.88rem;">
+            <li><a href="{% url 'marketplace:seller_register' %}" style="color: inherit; text-decoration: none;">{% t "Sajili Wasifu wa Biashara" "Register Business Storefront" %}</a></li>
+            <li><a href="{% url 'marketplace:seller_dashboard' %}" style="color: inherit; text-decoration: none;">{% t "Dashibodi ya Usimamizi" "Merchant Dashboard" %}</a></li>
+            <li><a href="{% url 'marketplace:seller_verification' %}" style="color: inherit; text-decoration: none;">{% t "Uhakiki wa Leseni / Kitambulisho" "Verification & Credentials" %}</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="color: #0f172a; margin: 0 0 14px; font-size: 0.95rem; font-weight: 700;">{% t "Sera na Usalama" "Platform & Legal" %}</h4>
+          <ul style="list-style: none; padding: 0; margin: 0; line-height: 2; font-size: 0.88rem;">
+            <li><a href="{% url 'marketplace:privacy_policy' %}" style="color: inherit; text-decoration: none;">{% t "Sera ya Faragha (PDPA 2022)" "Privacy Policy (PDPA 2022)" %}</a></li>
+            {% if user.is_authenticated %}
+              <li><a href="{% url 'marketplace:data_export' %}" style="color: inherit; text-decoration: none;">{% t "Pakua Data Yangu (Export Data)" "Download Personal Data" %}</a></li>
+            {% endif %}
+            <li><a href="{% url 'web:home' %}" style="color: inherit; text-decoration: none;">{% t "Nafasi za Kazi (Atrium Careers)" "Atrium Careers Portal" %}</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid #f1f5f9; padding-top: 24px; text-align: center; font-size: 0.82rem; color: #94a3b8;">
+        &copy; 2026 Atrium Platform. All rights reserved. Dar es Salaam, Tanzania.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile Bottom Navigation Bar (Minimalist) -->
+  <nav class="mp-mobile-nav" aria-label="Mobile Navigation">
+    <a href="{% url 'marketplace:home' %}" class="mp-mob-item {% if request.resolver_match.url_name == 'home' %}is-active{% endif %}">
+      <span>Home</span>
+    </a>
+    <a href="{% url 'marketplace:listing_list' %}" class="mp-mob-item {% if request.resolver_match.url_name == 'listing_list' %}is-active{% endif %}">
+      <span>Browse</span>
+    </a>
+    <a href="{% url 'marketplace:seller_listing_create' %}" class="mp-mob-item" style="color: var(--primary);">
+      <span>+ Post</span>
+    </a>
+    <a href="{% if user.is_authenticated %}{% url 'marketplace:chat_inbox' %}{% else %}{% url 'marketplace:phone_auth_request' %}{% endif %}" class="mp-mob-item">
+      <span>Chats</span>
+    </a>
+    <a href="{% if user.is_authenticated %}{% if user.marketplace_business %}{% url 'marketplace:seller_dashboard' %}{% else %}{% url 'marketplace:order_list' %}{% endif %}{% else %}{% url 'marketplace:phone_auth_request' %}{% endif %}" class="mp-mob-item">
+      <span>Account</span>
+    </a>
+  </nav>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register("{% url 'marketplace:pwa_sw' %}")
+          .catch(err => console.log('SW registration skipped:', err));
+      });
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

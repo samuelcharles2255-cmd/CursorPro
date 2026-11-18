@@ -1,0 +1,83 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Kikapu cha Manunuzi" "Shopping Cart" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 760px; margin: 30px auto;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+    <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: #0f172a;">
+      {% t "Kikapu Chako cha Manunuzi" "Your Shopping Cart" %}
+    </h1>
+    <a href="{% url 'marketplace:home' %}" class="mp-lang-toggle" style="font-size: 0.82rem;">
+      ← {% t "Endelea na Manunuzi" "Continue Shopping" %}
+    </a>
+  </div>
+
+  {% if items %}
+    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        {% for item in items %}
+          <div style="display: flex; gap: 16px; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
+            <div style="width: 70px; height: 70px; border-radius: 8px; overflow: hidden; background: #f1f5f9; flex-shrink: 0; border: 1px solid #e2e8f0;">
+              {% if item.listing.cover_image %}
+                <img src="{{ item.listing.cover_image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+              {% else %}
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.75rem; font-weight: 600;">
+                  Atrium
+                </div>
+              {% endif %}
+            </div>
+
+            <div style="flex: 1;">
+              <a href="{% url 'marketplace:listing_detail' slug=item.listing.slug %}" style="font-weight: 700; color: #0f172a; text-decoration: none; font-size: 0.95rem;">
+                {{ item.listing.title }}
+              </a>
+              <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                {{ item.listing.seller.business_name }} · {{ item.listing.ward }}
+              </div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: #0f766e; margin-top: 4px;">
+                {{ item.listing.price|tzs }}
+                {% if item.quantity > 1 %}
+                  <span style="font-size: 0.8rem; color: #64748b; font-weight: 500;">x {{ item.quantity }} = {{ item.subtotal|tzs }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <form method="post" action="{% url 'marketplace:cart_remove' pk=item.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="mp-lang-toggle" style="color: #dc2626; border-color: #fecaca; background: #fef2f2; cursor: pointer; font-size: 0.82rem; padding: 6px 12px;" title="Ondoa">
+                {% t "Ondoa" "Remove" %}
+              </button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Total & Checkout CTA -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
+        <div>
+          <div style="font-size: 0.85rem; color: #64748b;">{% t "Jumla ya Manunuzi:" "Total Amount:" %}</div>
+          <div style="font-size: 1.6rem; font-weight: 900; color: #0f766e;">{{ total|tzs }}</div>
+        </div>
+
+        <a href="{% url 'marketplace:checkout' %}" class="mp-btn-post" style="padding: 12px 24px; font-size: 1rem;">
+          {% t "Weka Oda Sasa →" "Proceed to Order →" %}
+        </a>
+      </div>
+    </div>
+  {% else %}
+    <div style="background: white; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 48px 24px; text-align: center;">
+      <h2 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.4rem; font-weight: 700; margin: 0 0 8px; color: #0f172a;">
+        {% t "Kikapu chako kiko tupu" "Your cart is currently empty" %}
+      </h2>
+      <p style="color: #64748b; margin: 0 0 20px; font-size: 0.92rem;">
+        {% t "Tafuta bidhaa unazopenda kutoka kwa wafanyabiashara walioidhinishwa Dar es Salaam." "Browse verified merchant listings in Dar es Salaam to add items." %}
+      </p>
+      <a href="{% url 'marketplace:home' %}" class="mp-btn-post">
+        {% t "Tazama Bidhaa" "Browse Listings" %}
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

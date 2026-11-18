@@ -1,0 +1,71 @@
+{% extends "marketplace/base_marketplace.html" %}
+{% load static marketplace_tags %}
+
+{% block title %}{% t "Uhakiki wa Muuzaji (Verified Badge)" "Seller Verification" %} · Atrium Marketplace{% endblock %}
+
+{% block content %}
+<div class="mp-container" style="max-width: 600px; margin: 30px auto;">
+  <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 28px; box-shadow: var(--shadow);">
+    
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0 0 8px; color: #0f172a;">
+        {% t "Omba Beji ya Muuzaji Aliyethibitishwa" "Apply for Verified Merchant Credentials" %}
+      </h1>
+      <p style="font-size: 0.88rem; color: #64748b; margin: 0; line-height: 1.5;">
+        {% t "Wateja wa Dar es Salaam wanaamini zaidi maduka yaliyothibitishwa. Pakia kitambulisho cha Taifa (NIDA), Mpiga Kura au Cheti cha TIN." "Build enterprise trust with buyers across Dar es Salaam by submitting your national identification (NIDA), Voter Card, or TRA TIN Certificate." %}
+      </p>
+    </div>
+
+    {% if business.is_verified %}
+      <div style="background: #ccfbf1; border: 1px solid #99f6e4; color: #0f766e; padding: 16px; border-radius: 8px; text-align: center; font-weight: 700; margin-bottom: 20px;">
+        ✓ {% t "Hongera! Duka lako la" "Congratulations! Your business" %} '{{ business.business_name }}' {% t "limehakikiwa na beji ya Verified iko hewani." "is verified and the badge is active." %}
+      </div>
+    {% elif existing and existing.status == 'pending' %}
+      <div style="background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 16px; border-radius: 8px; text-align: center; font-weight: 700; margin-bottom: 20px;">
+        {% t "Nyaraka zako zimepokelewa na ziko chini ya ukaguzi wa timu yetu ya usalama." "Your credentials have been submitted and are undergoing compliance review by our team." %}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Aina ya Kitambulisho / Nyaraka:" "Document Type:" %} *
+        </label>
+        {{ form.document_type }}
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Namba ya Kitambulisho (ID / TIN Number):" "ID or TIN Number:" %} *
+        </label>
+        {{ form.id_number }}
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Picha ya Mbele ya Kitambulisho (Front):" "Document Front Image:" %} *
+        </label>
+        {{ form.document_front }}
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          {% t "Picha ya Nyuma ya Kitambulisho (Back - Hiari):" "Document Back Image (Optional):" %}
+        </label>
+        {{ form.document_back }}
+      </div>
+
+      <button type="submit" class="mp-btn-cta mp-btn-order" style="margin-bottom: 14px; padding: 14px; font-size: 1rem;">
+        {% t "Wasilisha Nyaraka kwa Ukaguzi →" "Submit Verification Application →" %}
+      </button>
+
+      <div style="text-align: center; font-size: 0.78rem; color: #94a3b8; line-height: 1.5;">
+        {% t "Nyaraka zote zinatunzwa kwa usalama kulingana na Sheria ya Ulinzi wa Taarifa Binafsi ya Tanzania (PDPA 2022)." "All identification files are protected and processed strictly under the Tanzania Personal Data Protection Act (PDPA 2022)." %}
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
