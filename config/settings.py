@@ -32,14 +32,14 @@ FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY", "")
 SECRET_KEY = os.environ.get("SECRET_KEY","django-insecure-8dz)$mq^+vl%fizqdo^gvs07smq(4m8$b&dtv_27f!y1q1if3h'")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =  os.environ.get("DEBUG", "False") == "True"
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ['*']
 
-# Trust tunnel HTTPS origins so Django CSRF protection allows POST requests
+# Trust tunnel and Wasmer HTTPS origins so Django CSRF protection allows POST requests
 CSRF_TRUSTED_ORIGINS = [
-    
     'https://*.trycloudflare.com',
+    'https://*.wasmer.app',
 ]
 
 # Ensure Django knows it is behind an HTTPS reverse proxy (ngrok)
@@ -67,15 +67,15 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'config.middleware.NgrokMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'config.middleware.NgrokMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -187,6 +187,39 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }

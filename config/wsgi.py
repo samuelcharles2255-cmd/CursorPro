@@ -14,3 +14,11 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
+
+# Run database migrations on startup to ensure all tables exist
+try:
+    from django.core.management import call_command
+    call_command('migrate', interactive=False)
+except Exception as _e:
+    import logging
+    logging.getLogger('django').warning(f"Startup migration note: {_e}")
