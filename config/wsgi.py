@@ -15,10 +15,14 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
 
-# Run database migrations on startup to ensure all tables exist
+# Run database migrations on startup to ensure all tables exist, and seed jobs if empty
 try:
     from django.core.management import call_command
     call_command('migrate', interactive=False)
+
+    from apps.jobs.models import Job
+    if not Job.objects.exists():
+        call_command('loaddata', 'jobs_data.json')
 except Exception as _e:
     import logging
-    logging.getLogger('django').warning(f"Startup migration note: {_e}")
+    logging.getLogger('django').warning(f"Startup initialization note: {_e}")
