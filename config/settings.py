@@ -42,7 +42,12 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.wasmer.app',
 ]
 
-# Ensure Django knows it is behind an HTTPS reverse proxy (ngrok)
+# Cookie security & reverse proxy settings
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False
+
+# Ensure Django knows it is behind an HTTPS reverse proxy (ngrok / Wasmer Edge)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 
