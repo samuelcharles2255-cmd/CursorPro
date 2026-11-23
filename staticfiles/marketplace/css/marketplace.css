@@ -4,9 +4,11 @@
    ======================================================== */
 
 :root {
-  --primary: #0f766e;
-  --primary-dark: #115e59;
-  --primary-light: #ccfbf1;
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --primary-light: #d1fae5;
+  --jobs-navy: #1e3a8a;
+  --jobs-blue: #2563eb;
   --accent-wa: #25d366;
   --accent-wa-dark: #128c7e;
   --accent-orange: #f59e0b;

@@ -2,30 +2,43 @@
 {% load static marketplace_tags %}
 
 {% block content %}
-<!-- Hero Section (Atrium Design System) -->
-<section style="background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 48px 0 40px;">
-  <div class="mp-container">
-    <div style="max-width: 720px;">
-      <span style="display: inline-block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #0f766e; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 4px 10px; border-radius: 20px; margin-bottom: 16px;">
-        {% t "Dar es Salaam Verified Marketplace" "Dar es Salaam Verified Marketplace" %}
+<!-- Hero Section (High-Contrast Dark Anchor Section with Emerald Accent) -->
+<section style="background: linear-gradient(180deg, #0a0e17 0%, #111827 100%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 56px 0 48px; color: #ffffff; position: relative; overflow: hidden;">
+  <div style="position: absolute; top: -100px; right: -80px; width: 350px; height: 350px; background: radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+  
+  <div class="mp-container" style="position: relative; z-index: 2;">
+    <div style="max-width: 780px;">
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #34d399; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+        {% t "The City Marketplace · Dar es Salaam Escrow Protected" "The City Marketplace · Dar es Salaam Escrow Protected" %}
       </span>
-      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2.8rem; font-weight: 700; margin: 0 0 12px; color: #111827; line-height: 1.15; letter-spacing: -0.5px;">
-        {% t "Nunua na Uza kwa Wauzaji Walioidhinishwa Dar es Salaam" "Buy & Sell with Verified Merchants in Dar es Salaam" %}
+      <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(2.2rem, 4vw, 3.2rem); font-weight: 700; margin: 0 0 14px; color: #ffffff; line-height: 1.15; letter-spacing: -0.5px;">
+        {% t "Nunua na Uza kwa Usalama wa Escrow Dar es Salaam" "Buy & Sell with Bank-Grade Escrow Protection in Dar es Salaam" %}
       </h1>
-      <p style="font-size: 1.05rem; color: #4b5563; margin: 0 0 24px; line-height: 1.6;">
-        {% t "Ungana moja kwa moja na maduka na wamiliki wa biashara Kariakoo, Sinza, Mwenge, Masaki na wodi zote za jiji." "Connect directly with verified store owners in Kariakoo, Sinza, Mwenge, Masaki, and across all municipal wards." %}
+      <p style="font-size: 1.05rem; color: #cbd5e1; margin: 0 0 28px; line-height: 1.6;">
+        {% t "Ungana moja kwa moja na wafanyabiashara walioidhinishwa Kariakoo, Sinza, Mwenge, Masaki na wodi zote za jiji. Malipo yako yanalindwa na The City Escrow hadi upokee na kukagua bidhaa." "Connect directly with verified store owners in Kariakoo, Sinza, Mwenge, Masaki, and across all municipal wards. Funds stay secured in The City Escrow until you inspect and verify the product." %}
       </p>
+
+      <!-- Search & Post Action Bar -->
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 24px;">
+        <a href="{% url 'marketplace:seller_listing_create' %}" style="display: inline-flex; align-items: center; gap: 8px; background: #10b981; color: #042f2e; font-weight: 700; font-size: 0.92rem; padding: 13px 24px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 18px rgba(16,185,129,0.35); transition: transform 0.2s;">
+          <span>+</span> {% t "Weka Tangazo Bure" "Post Free Listing" %}
+        </a>
+        <a href="{% url 'marketplace:listing_list' %}" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; font-weight: 600; font-size: 0.92rem; padding: 13px 20px; border-radius: 12px; text-decoration: none;">
+          {% t "Tazama Bidhaa Zote" "Browse All Listings" %} &rarr;
+        </a>
+      </div>
 
       <!-- Commercial Districts Tags -->
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <span style="font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
+        <span style="font-size: 0.78rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
           {% t "Maeneo:" "Districts:" %}
         </span>
-        <a href="{% url 'marketplace:listing_list' %}?ward=Kariakoo" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Kariakoo</a>
-        <a href="{% url 'marketplace:listing_list' %}?ward=Sinza" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Sinza / Kinondoni</a>
-        <a href="{% url 'marketplace:listing_list' %}?ward=Mwenge" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Mwenge / Mlimani</a>
-        <a href="{% url 'marketplace:listing_list' %}?ward=Masaki" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Masaki & Mikocheni</a>
-        <a href="{% url 'marketplace:listing_list' %}?ward=Posta" class="mp-lang-toggle" style="border-radius: 20px; padding: 4px 12px; font-size: 0.82rem;">Posta / Kisutu</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Kariakoo" style="border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; text-decoration: none;">Kariakoo</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Sinza" style="border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; text-decoration: none;">Sinza</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Mwenge" style="border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; text-decoration: none;">Mwenge</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Masaki" style="border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; text-decoration: none;">Masaki</a>
+        <a href="{% url 'marketplace:listing_list' %}?ward=Posta" style="border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; text-decoration: none;">Posta</a>
       </div>
     </div>
   </div>
@@ -55,21 +68,21 @@
       <h2 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: #111827;">
         {% t "Kategoria Kuu za Biashara" "Featured Marketplace Categories" %}
       </h2>
-      <a href="{% url 'marketplace:listing_list' %}" style="color: #0f766e; text-decoration: none; font-weight: 600; font-size: 0.88rem;">
+      <a href="{% url 'marketplace:listing_list' %}" style="color: #10b981; text-decoration: none; font-weight: 600; font-size: 0.88rem;">
         {% t "Tazama Zote →" "Explore All Categories →" %}
       </a>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
       {% for cat in featured_categories %}
-        <a href="{% url 'marketplace:listing_list' %}?category={{ cat.slug }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 16px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: border-color 0.15s, box-shadow 0.15s;" onmouseover="this.style.borderColor='#0f766e'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+        <a href="{% url 'marketplace:listing_list' %}?category={{ cat.slug }}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 16px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: border-color 0.15s, box-shadow 0.15s;" onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.1)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
           <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">
             {% t "Kategoria" "Category" %}
           </div>
           <span style="font-weight: 700; font-size: 1rem; color: #0f172a; line-height: 1.3;">
             {% if request.session.lang == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_sw }}{% endif %}
           </span>
-          <span style="font-size: 0.8rem; color: #0f766e; margin-top: 8px; font-weight: 600;">
+          <span style="font-size: 0.8rem; color: #10b981; margin-top: 8px; font-weight: 600;">
             {% t "Tazama bidhaa →" "View items →" %}
           </span>
         </a>
@@ -117,7 +130,7 @@
         {% t "Matangazo mapya yaliyowekwa na wauzaji wa Dar es Salaam" "Freshly added products from verified regional suppliers" %}
       </span>
     </div>
-    <a href="{% url 'marketplace:listing_list' %}" style="color: #0f766e; text-decoration: none; font-weight: 600; font-size: 0.88rem;">
+    <a href="{% url 'marketplace:listing_list' %}" style="color: #10b981; text-decoration: none; font-weight: 600; font-size: 0.88rem;">
       {% t "Tazama Zote →" "View All Listings →" %}
     </a>
   </div>

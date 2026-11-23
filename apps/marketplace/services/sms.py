@@ -60,7 +60,7 @@ class OTPService:
                     headers={
                         "Content-Type": "application/json",
                         "Authorization": auth_header,
-                        "User-Agent": "AtriumMarketplace/1.0"
+                        "User-Agent": "TheCityMarketplace/1.0"
                     }
                 )
                 with urllib.request.urlopen(req, timeout=10) as resp:
@@ -89,7 +89,7 @@ class OTPService:
                     data=data,
                     headers={
                         "Authorization": auth_header,
-                        "User-Agent": "AtriumMarketplace/1.0"
+                        "User-Agent": "TheCityMarketplace/1.0"
                     }
                 )
                 with urllib.request.urlopen(req, timeout=10) as resp:
@@ -169,14 +169,14 @@ class OTPService:
             expires_at=expires_at
         )
 
-        message_text = f"Msimbo wako wa uthibitisho wa Atrium Marketplace ni {otp_code}. Msimbo huu utaisha baada ya dakika 10."
+        message_text = f"Msimbo wako wa uthibitisho wa The City Marketplace ni {otp_code}. Msimbo huu utaisha baada ya dakika 10."
 
         # Attempt live SMS dispatch
         live_sent = cls._dispatch_live_sms(normalized, message_text)
 
         logger.info(f"[SMS SERVICE] To: {normalized} | LiveSent: {live_sent} | Code: {otp_code}")
         print(f"\n==========================================")
-        print(f"[ATRIUM SMS SERVICE] To: {normalized}")
+        print(f"[THE CITY SMS SERVICE] To: {normalized}")
         print(f"OTP Code: {otp_code}")
         print(f"Live SMS Gateway Dispatched: {live_sent}")
         print(f"==========================================\n")

@@ -4,11 +4,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Atrium{% endblock %} · Atrium</title>
+  <title>{% block title %}The City{% endblock %} · The City</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2.0">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2.1">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -22,14 +22,23 @@
   <footer class="site-footer">
     <div class="footer-inner">
       <div>
-        <div class="brand-mark">Atrium<span>.</span></div>
-        <p class="muted">A considered place to find work and people.</p>
+        <div class="brand-mark" style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-flex; width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(30,58,138,0.4)); border: 1px solid rgba(16,185,129,0.4); align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; letter-spacing: 0.5px;">TC</span>
+          <span>The City<span>.</span></span>
+        </div>
+        <p class="muted">Premier Dual Career Platform &amp; Peer-to-Peer Escrow Marketplace · Dar es Salaam &amp; East Africa</p>
       </div>
       <nav>
-        <a href="{% url 'web:job_list' %}">Jobs</a> ·
+        <a href="{% url 'web:home' %}">Overview</a> ·
+        <a href="{% url 'web:job_list' %}" style="color: #60a5fa; font-weight: 600;">Jobs</a> ·
+        <a href="{% url 'marketplace:home' %}" style="color: #34d399; font-weight: 600;">Marketplace</a> ·
         <a href="{% url 'web:company_list' %}">Companies</a> ·
         <a href="{% url 'web:register' %}">Join</a>
       </nav>
+    </div>
+    <div style="max-width: 1200px; margin: 16px auto 0; padding: 12px 24px 0; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 11px; color: #64748b;">
+      <span>&copy; 2026 The City Technologies Ltd. All rights reserved.</span>
+      <span>Escrow Guarded &bull; Bank Grade Verification</span>
     </div>
   </footer>
   <script src="{% static 'js/app.js' %}?v=2.0"></script>

@@ -1,7 +1,7 @@
 {% extends "marketplace/base_marketplace.html" %}
 {% load static marketplace_tags %}
 
-{% block title %}{% t "Ingia au Jisajili" "Sign In or Register" %} · Atrium Marketplace{% endblock %}
+{% block title %}{% t "Ingia au Jisajili" "Sign In or Register" %} · The City Marketplace{% endblock %}
 
 {% block content %}
 <div class="mp-container" style="max-width: 480px; margin: 48px auto;">
@@ -9,7 +9,7 @@
     
     <div style="text-align: center; margin-bottom: 28px;">
       <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2rem; font-weight: 700; margin: 0 0 8px; color: #111827;">
-        {% t "Karibu Atrium Marketplace" "Welcome to Atrium Marketplace" %}
+        {% t "Karibu The City Marketplace" "Welcome to The City Marketplace" %}
       </h1>
       <p style="font-size: 0.9rem; color: #64748b; margin: 0; line-height: 1.5;">
         {% t "Ingiza namba yako ya simu kupokea msimbo wa uthibitisho (SMS OTP)." "Enter your mobile number to receive a secure SMS verification code (OTP)." %}
@@ -76,8 +76,8 @@
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid #f1f5f9; font-size: 0.85rem;">
-        <span style="color: #64748b;">{% t "Tayari una akaunti ya Atrium?" "Have an Atrium account?" %}</span>
-        <a href="{% url 'web:login' %}" style="color: #0f766e; font-weight: 600; text-decoration: none;">
+        <span style="color: #64748b;">{% t "Tayari una akaunti ya The City?" "Have a The City account?" %}</span>
+        <a href="{% url 'web:login' %}" style="color: #10b981; font-weight: 600; text-decoration: none;">
           {% t "Ingia kwa Barua Pepe" "Sign In with Email" %} →
         </a>
       </div>

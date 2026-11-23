@@ -1,32 +1,157 @@
 {% extends "base.html" %}
 {% load web_tags %}
 
-{% block title %}Find considered work{% endblock %}
+{% block title %}Dual Career Platform & Peer-to-Peer Escrow Marketplace{% endblock %}
 
 {% block content %}
-  <section class="hero">
-    <div>
-      <p class="kicker">A modern classic job board</p>
-      <h1>Roles worth opening, from companies that still write well.</h1>
-      <p class="lede">Search live listings by title, city, employment type, and the skills on your profile. Apply on the company site — Atrium keeps the record honest.</p>
+  <!-- ========================================================= -->
+  <!-- 1. GRAND DUAL-BRANCH LANDING SHOWCASE                     -->
+  <!-- ========================================================= -->
+  <section class="landing-showcase" style="margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <div style="text-align: center; max-width: 800px; margin: 0 auto 36px;">
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px; border-radius: 9999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;"></span>
+        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #cbd5e1;">The City Ecosystem &bull; Two Dedicated Hubs</span>
+      </div>
+      <h1 style="font-size: clamp(2rem, 4vw, 3.2rem); font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; line-height: 1.15; margin: 0 0 16px; color: #ffffff; letter-spacing: -0.5px;">
+        One Unified Platform.<br>Two World-Class Experiences.
+      </h1>
+      <p style="font-size: 1.05rem; line-height: 1.6; color: #94a3b8; margin: 0;">
+        Step into the future of East African commerce and talent acquisition. Trade verified electronics and goods with escrow protection, or explore 770+ executive career opportunities.
+      </p>
     </div>
-    <div class="hero-panel">
-      <form action="{% url 'web:job_list' %}" method="get" class="search-row">
-        <input class="field-input" type="search" name="search" placeholder="Try Python, Nairobi, design…">
-        <button class="btn-gold" type="submit">Search</button>
-      </form>
-      <div class="stats">
-        <div class="stat"><b>{{ job_count }}</b> open roles</div>
-        <div class="stat"><b>{{ company_count }}</b> companies</div>
-        <div class="stat"><b>{{ skill_count }}</b> skills tracked</div>
+
+    <!-- DUAL CARDS GRID -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 40px;">
+      
+      <!-- BRANCH 1: THE MARKETPLACE (EMERALD GREEN ACCENT) -->
+      <div class="branch-card branch-market" style="background: linear-gradient(145deg, #131722, #0d111a); border: 1px solid rgba(16,185,129,0.3); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+        <div style="position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+        
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #34d399; background: rgba(16,185,129,0.12); padding: 4px 10px; border-radius: 9999px; border: 1px solid rgba(16,185,129,0.25);">
+              <span>🛒</span> Marketplace Hub
+            </span>
+            <span style="font-size: 11px; color: #10b981; font-weight: 600;">Accent: Emerald Green</span>
+          </div>
+
+          <h2 style="font-size: 1.75rem; font-family: 'Cormorant Garamond', Georgia, serif; color: #fff; margin: 0 0 10px;">
+            Peer-to-Peer Escrow Marketplace
+          </h2>
+          <p style="font-size: 0.92rem; line-height: 1.55; color: #94a3b8; margin: 0 0 20px;">
+            A clean, modern marketplace for buying and selling electronics, fashion, and services across Dar es Salaam. Funds stay locked in secure escrow until you inspect and approve the item.
+          </p>
+
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: #cbd5e1;">
+            <li style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #10b981; font-weight: 800;">✓</span>
+              <span><strong>The City Escrow:</strong> 100% money-back buyer guarantee</span>
+            </li>
+            <li style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #10b981; font-weight: 800;">✓</span>
+              <span><strong>Direct Merchant Chat:</strong> WhatsApp verified sellers</span>
+            </li>
+            <li style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #10b981; font-weight: 800;">✓</span>
+              <span><strong>Zero Commission Listings:</strong> Publish in 60 seconds</span>
+            </li>
+          </ul>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <a href="{% url 'marketplace:home' %}" style="flex: 1; text-align: center; background: #10b981; color: #042f2e; font-weight: 700; font-size: 0.92rem; padding: 13px 20px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 18px rgba(16,185,129,0.3); transition: transform 0.2s;">
+            Launch Marketplace &rarr;
+          </a>
+          <a href="{% url 'marketplace:listing_create' %}" style="padding: 13px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.85rem; font-weight: 600; text-decoration: none; background: rgba(255,255,255,0.04);">
+            Post Ad
+          </a>
+        </div>
+      </div>
+
+      <!-- BRANCH 2: JOBS (NAVY BLUE ACCENT) -->
+      <div class="branch-card branch-jobs" style="background: linear-gradient(145deg, #0e1628, #0a0f1d); border: 1px solid rgba(59,130,246,0.35); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+        <div style="position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #60a5fa; background: rgba(37,99,235,0.15); padding: 4px 10px; border-radius: 9999px; border: 1px solid rgba(59,130,246,0.3);">
+              <span>💼</span> Jobs Hub
+            </span>
+            <span style="font-size: 11px; color: #60a5fa; font-weight: 600;">Accent: Navy Blue</span>
+          </div>
+
+          <h2 style="font-size: 1.75rem; font-family: 'Cormorant Garamond', Georgia, serif; color: #fff; margin: 0 0 10px;">
+            770+ Verified Corporate Careers
+          </h2>
+          <p style="font-size: 0.92rem; line-height: 1.55; color: #94a3b8; margin: 0 0 20px;">
+            Connect with certified employers across Tanzania and East Africa. Discover verified salary bands, direct recruitment pathways, and verified employer profiles.
+          </p>
+
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: #cbd5e1;">
+            <li style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #60a5fa; font-weight: 800;">✓</span>
+              <span><strong>Top Tier Employers:</strong> CRDB, NMB, Vodacom, Tigo</span>
+            </li>
+            <li style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #60a5fa; font-weight: 800;">✓</span>
+              <span><strong>Salary Transparency:</strong> Published monthly brackets</span>
+            </li>
+            <li style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #60a5fa; font-weight: 800;">✓</span>
+              <span><strong>Direct Company Applications:</strong> No third-party middlemen</span>
+            </li>
+          </ul>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <a href="{% url 'web:job_list' %}" style="flex: 1; text-align: center; background: #2563eb; color: #ffffff; font-weight: 700; font-size: 0.92rem; padding: 13px 20px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 18px rgba(37,99,235,0.3); transition: transform 0.2s;">
+            Explore 770+ Jobs &rarr;
+          </a>
+          <a href="{% url 'web:company_list' %}" style="padding: 13px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.85rem; font-weight: 600; text-decoration: none; background: rgba(255,255,255,0.04);">
+            Companies
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- METRICS RIBBON -->
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; text-align: center;">
+      <div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #60a5fa; font-family: 'Cormorant Garamond', Georgia, serif;">{{ job_count|default:"770" }}+</div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8;">Verified Jobs</div>
+      </div>
+      <div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #34d399; font-family: 'Cormorant Garamond', Georgia, serif;">100%</div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8;">Escrow Protected</div>
+      </div>
+      <div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b; font-family: 'Cormorant Garamond', Georgia, serif;">{{ company_count|default:"45" }}+</div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8;">Hiring Companies</div>
+      </div>
+      <div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #a78bfa; font-family: 'Cormorant Garamond', Georgia, serif;">&lt; 15 mins</div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8;">Escrow Payouts</div>
       </div>
     </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- 2. QUICK SEARCH SECTION                                   -->
+  <!-- ========================================================= -->
+  <section class="hero-panel" style="margin-bottom: 40px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 24px;">
+    <h3 style="margin: 0 0 12px; font-size: 1.1rem; color: #fff; font-family: 'Cormorant Garamond', Georgia, serif;">Direct Career Search in The City</h3>
+    <form action="{% url 'web:job_list' %}" method="get" class="search-row">
+      <input class="field-input" type="search" name="search" placeholder="Search by role, skill (Python, React), or city (Dar es Salaam, Arusha)…">
+      <button class="btn" style="background: #2563eb; color: #fff; border: none; font-weight: 600; padding: 0 24px;" type="submit">Search Jobs</button>
+    </form>
   </section>
 
   {% if matching_jobs %}
     <div class="section-head">
       <div>
-        <p class="kicker">Matched to your profile</p>
+        <p class="kicker" style="color: #60a5fa;">Matched to your profile</p>
         <h2>Jobs that share your skills</h2>
       </div>
       <a class="btn-secondary" href="{% url 'web:profile' %}">Edit skills</a>
@@ -40,10 +165,10 @@
 
   <div class="section-head">
     <div>
-      <p class="kicker">Recently posted</p>
-      <h2>Featured openings</h2>
+      <p class="kicker" style="color: #60a5fa;">Featured Openings</p>
+      <h2>Corporate Roles in East Africa</h2>
     </div>
-    <a class="btn-secondary" href="{% url 'web:job_list' %}">Browse all</a>
+    <a class="btn-secondary" href="{% url 'web:job_list' %}">Browse all 770+ jobs</a>
   </div>
   {% if featured_jobs %}
     <div class="job-grid">

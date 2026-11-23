@@ -197,7 +197,7 @@ def listing_detail(request, slug):
 
     # Pre-filled WhatsApp message
     clean_title = listing.title.replace("&", "na")
-    wa_text = f"Habari {listing.seller.business_name}, nimeona tangazo lako la '{clean_title}' kwenye Atrium Marketplace (TSh {listing.price:,.0f}). Je, bado inapatikana?"
+    wa_text = f"Habari {listing.seller.business_name}, nimeona tangazo lako la '{clean_title}' kwenye The City Marketplace (TSh {listing.price:,.0f}). Je, bado inapatikana?"
     import urllib.parse
     wa_encoded_text = urllib.parse.quote(wa_text)
     wa_link = f"https://wa.me/{listing.seller.clean_whatsapp}?text={wa_encoded_text}"
@@ -259,7 +259,7 @@ def phone_auth_request(request):
         else:
             demo_buyer, _ = User.objects.get_or_create(
                 username="demo_customer",
-                defaults={"email": "customer@atrium.local", "name": "Amina Said", "role": "job_seeker"}
+                defaults={"email": "customer@thecity.local", "name": "Amina Said", "role": "job_seeker"}
             )
             login(request, demo_buyer, backend="django.contrib.auth.backends.ModelBackend")
             messages.success(request, "Umeingia kama Mteja: Amina Said")
@@ -332,7 +332,7 @@ def phone_auth_verify(request):
             if verify_res["success"]:
                 clean_phone_digits = phone.replace("+", "")
                 username = f"user_{clean_phone_digits}"
-                email_synth = f"{username}@atrium.local"
+                email_synth = f"{username}@thecity.local"
 
                 # Ensure clean professional display name
                 if name:
@@ -959,7 +959,7 @@ def data_export(request):
         "compliance": "Tanzania Personal Data Protection Act (2022)"
     }
     response = HttpResponse(json.dumps(data, indent=2), content_type="application/json")
-    response["Content-Disposition"] = f'attachment; filename="atrium_marketplace_data_{user.pk}.json"'
+    response["Content-Disposition"] = f'attachment; filename="thecity_marketplace_data_{user.pk}.json"'
     return response
 
 
@@ -969,13 +969,13 @@ def data_export(request):
 
 def pwa_manifest(request):
     manifest = {
-        "name": "Atrium Marketplace - Dar es Salaam",
-        "short_name": "Atrium",
+        "name": "The City Marketplace - Dar es Salaam",
+        "short_name": "The City",
         "description": "Nunua na uza bidhaa Dar es Salaam kwa urahisi na uhakika",
         "start_url": "/marketplace/",
         "display": "standalone",
         "background_color": "#ffffff",
-        "theme_color": "#0f766e",
+        "theme_color": "#10b981",
         "icons": [
             {
                 "src": "/static/marketplace/icons/icon-192.png",
@@ -994,7 +994,7 @@ def pwa_manifest(request):
 
 def pwa_service_worker(request):
     sw_code = """
-const CACHE_NAME = 'atrium-marketplace-v1';
+const CACHE_NAME = 'thecity-marketplace-v1';
 const STATIC_ASSETS = [
   '/marketplace/',
   '/static/css/app.css',
