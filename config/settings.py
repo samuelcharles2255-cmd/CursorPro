@@ -40,7 +40,12 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     'https://*.trycloudflare.com',
     'https://*.wasmer.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Cookie security & reverse proxy settings
 CSRF_COOKIE_SAMESITE = 'Lax'
@@ -55,6 +60,7 @@ USE_X_FORWARDED_HOST = True
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -63,6 +69,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'accounts',
+    'users',
+    'apps.marketplace.categories',
+    'apps.marketplace.listings',
+    'apps.marketplace.messaging',
+    'apps.marketplace.favorites',
     'apps.jobs',
     'apps.marketplace',
     'web',
@@ -72,6 +83,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'config.middleware.NgrokMiddleware',
@@ -153,7 +165,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'apps' / 'marketplace' / 'media'
 
 LOGIN_URL = 'web:login'
 LOGIN_REDIRECT_URL = 'web:home'
@@ -177,7 +189,7 @@ REST_FRAMEWORK = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = 'users.User'
 
 # Explicitly declare the authentication backend.
 # ModelBackend respects USERNAME_FIELD = "email" so the admin

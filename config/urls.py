@@ -22,6 +22,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
+    path('api/', include('users.urls')),
+    path('api/', include('apps.marketplace.listings.urls')),
+    path('api/', include('apps.marketplace.messaging.urls')),
+    path('api/', include('apps.marketplace.favorites.urls')),
     path('api/', include('apps.jobs.urls')),
     path('marketplace/', include('apps.marketplace.urls')),
     path('', include('web.urls')),

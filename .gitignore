@@ -3,20 +3,32 @@
 *.pot
 *.pyc
 __pycache__/
+*/__pycache__/
+*/*/__pycache__/
 db.sqlite3
-media
+media/
 # If you are using Django migrations
 *.py[cod]
 *.sqlite3
 *.pyo
 *.pyd
 *.pdb
-# If you are using Django static files
 
-env
-*.env
-# If you are using virtual environments
-venv/
+# Environment variables
 env/
-ENV/
 venv/
+ENV/
+*.env
+.env
+.env.local
+.env.*.local
+
+# Node / Next.js
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+frontend/out/
+frontend/build/
+*.tsbuildinfo
+.DS_Store
