@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Company, Job, Skill
+from .models import Company, Job, Skill, JobApplication, SavedJob
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -42,8 +42,44 @@ class JobSerializer(serializers.ModelSerializer):
 class JobDetailSerializer(serializers.ModelSerializer):
     """Full version — used when the user taps into a single job."""
     company = CompanySerializer(read_only=True)
+    company_name = serializers.CharField(source="company.name", read_only=True)
     skills = SkillSerializer(many=True, read_only=True)
 
     class Meta:
         model = Job
         fields = "__all__"
+
+
+class JobApplicationSerializer(serializers.ModelSerializer):
+    job_title = serializers.CharField(source="job.title", read_only=True)
+    company_name = serializers.CharField(source="job.company.name", read_only=True, default="")
+    company_logo = serializers.CharField(source="job.company.logo", read_only=True, default="")
+    location = serializers.CharField(source="job.location", read_only=True, default="")
+
+    class Meta:
+        model = JobApplication
+        fields = [
+            "id", "job", "job_title", "company_name", "company_logo",
+            "location", "full_name", "email", "phone", "cover_letter",
+            "resume_url", "status", "created_at", "updated_at"
+        ]
+        read_only_fields = ["id", "status", "created_at", "updated_at"]
+
+
+class CreateJobApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobApplication
+        fields = ["job", "full_name", "email", "phone", "cover_letter", "resume_url"]
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        return JobApplication.objects.create(user=user, **validated_data)
+
+
+class SavedJobSerializer(serializers.ModelSerializer):
+    job_details = JobSerializer(source="job", read_only=True)
+
+    class Meta:
+        model = SavedJob
+        fields = ["id", "job", "job_details", "created_at"]
+        read_only_fields = ["id", "created_at"]

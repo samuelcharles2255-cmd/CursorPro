@@ -7,6 +7,8 @@ import { MapPin, ShoppingBag, Heart, MessageSquare, ArrowUpRight, Phone, ShieldC
 import { Listing } from "@/types";
 import { formatTZS, formatCondition } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
+import { toggleFavorite as apiToggleFavorite } from "@/lib/api";
 import { SafeImage } from "@/components/ui/SafeImage";
 
 interface ProductCardProps {
@@ -15,6 +17,7 @@ interface ProductCardProps {
 
 export function ProductCard({ listing }: ProductCardProps) {
   const { addToCart } = useCart();
+  const { token, loginAsDemo } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [addedToast, setAddedToast] = useState(false);
 
@@ -28,11 +31,32 @@ export function ProductCard({ listing }: ProductCardProps) {
     (listing.images && listing.images[0]?.image) ||
     defaultImg;
 
-  // Optimistic favorite toggle (HCI Rule 4)
-  const toggleFavorite = (e: React.MouseEvent) => {
+  // Real backend favorite toggle with optimistic update
+  const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsFavorited(!isFavorited);
+    const nextState = !isFavorited;
+    setIsFavorited(nextState);
+
+    let activeToken = token;
+    if (!activeToken) {
+      try {
+        await loginAsDemo("buyer");
+        activeToken = localStorage.getItem("atrium_token");
+      } catch (err) {
+        console.warn("Auto demo login error:", err);
+      }
+    }
+
+    if (activeToken) {
+      try {
+        const res = await apiToggleFavorite(listing.id, activeToken);
+        setIsFavorited(res.favorited);
+      } catch (err) {
+        console.warn("Favorite API error:", err);
+        setIsFavorited(!nextState);
+      }
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {

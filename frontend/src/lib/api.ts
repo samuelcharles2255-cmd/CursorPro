@@ -1,6 +1,106 @@
-import { Category, Listing, Job, User, Conversation, ChatMessage } from "@/types";
+import { Category, Listing, Job, User, Conversation, ChatMessage, Order, JobApplication, SavedJob } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
+// Fallback executive jobs for immediate display and offline assurance
+export const FALLBACK_JOBS: Job[] = [
+  {
+    id: 1,
+    title: "Senior Full-Stack Engineer (Core Banking & Payments)",
+    company_name: "CRDB Bank Plc",
+    company_logo: null,
+    location: "Dar es Salaam, Tanzania",
+    country: "Tanzania",
+    employment_type: "Full-Time",
+    experience_level: "Senior Level",
+    is_remote: false,
+    salary_min: 6500000,
+    salary_max: 8500000,
+    salary_currency: "TSh",
+    posted_at: new Date().toISOString(),
+    description: "Lead architecting and deploying distributed microservices for CRDB's next-gen omnichannel payment gateway and merchant APIs.",
+  },
+  {
+    id: 2,
+    title: "Head of Digital Channels & Mobile Innovation",
+    company_name: "NMB Bank Plc",
+    company_logo: null,
+    location: "Dar es Salaam, Tanzania",
+    country: "Tanzania",
+    employment_type: "Full-Time",
+    experience_level: "Executive / Lead",
+    is_remote: false,
+    salary_min: 12000000,
+    salary_max: 16000000,
+    salary_currency: "TSh",
+    posted_at: new Date().toISOString(),
+    description: "Direct retail digital banking strategy across iOS, Android, and USSD banking platforms serving over 6M account holders across East Africa.",
+  },
+  {
+    id: 3,
+    title: "Lead Cloud Infrastructure Architect (Fintech Cloud)",
+    company_name: "Vodacom Tanzania (M-Pesa)",
+    company_logo: null,
+    location: "Dar es Salaam, Tanzania",
+    country: "Tanzania",
+    employment_type: "Full-Time",
+    experience_level: "Principal",
+    is_remote: true,
+    salary_min: 9000000,
+    salary_max: 12500000,
+    salary_currency: "TSh",
+    posted_at: new Date().toISOString(),
+    description: "Oversee multi-region Kubernetes clusters and high-throughput transaction brokers handling over 300 million monthly transactions.",
+  },
+  {
+    id: 4,
+    title: "RM Agribusiness Cash Crops Specialist",
+    company_name: "Equity Bank",
+    company_logo: null,
+    location: "Dar es Salaam, Tanzania",
+    country: "Tanzania",
+    employment_type: "Full-Time",
+    experience_level: "Mid-Senior",
+    is_remote: false,
+    salary_min: 4500000,
+    salary_max: 6000000,
+    salary_currency: "TSh",
+    posted_at: new Date().toISOString(),
+    description: "Manage strategic corporate agribusiness portfolios and structured commodity trade finance facilities across the EAC corridor.",
+  },
+  {
+    id: 5,
+    title: "Senior Product Designer (Design Systems & Fintech)",
+    company_name: "Tigo / Axian Group",
+    company_logo: null,
+    location: "Dar es Salaam, Tanzania",
+    country: "Tanzania",
+    employment_type: "Full-Time",
+    experience_level: "Senior Level",
+    is_remote: true,
+    salary_min: 5500000,
+    salary_max: 7500000,
+    salary_currency: "TSh",
+    posted_at: new Date().toISOString(),
+    description: "Design accessible, tactile, and high-conversion financial products and merchant dashboards across East Africa.",
+  },
+  {
+    id: 6,
+    title: "Director of Financial Markets & Regional Treasury",
+    company_name: "Standard Chartered Bank",
+    company_logo: null,
+    location: "Dar es Salaam, Tanzania",
+    country: "Tanzania",
+    employment_type: "Full-Time",
+    experience_level: "Director",
+    is_remote: false,
+    salary_min: 18000000,
+    salary_max: 24000000,
+    salary_currency: "TSh",
+    posted_at: new Date().toISOString(),
+    description: "Direct macro rates trading, FX hedging solutions, and institutional capital market strategies for multinational conglomerates.",
+  },
+];
 
 // Fallback high-ticket listings for offline/prerender assurance
 export const FALLBACK_LISTINGS: Listing[] = [
@@ -248,32 +348,48 @@ export const FALLBACK_CATEGORIES: Category[] = [
   },
 ];
 
-export async function fetchListings(params: Record<string, string | number | undefined> = {}): Promise<{ count: number; results: Listing[] }> {
+export async function fetchListings(
+  params: Record<string, string | number | undefined> = {},
+  token?: string
+): Promise<{ count: number; results: Listing[] }> {
   const query = new URLSearchParams();
   Object.entries(params).forEach(([key, val]) => {
     if (val !== undefined && val !== "") query.set(key, String(val));
   });
 
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   try {
     const res = await fetch(`${API_BASE}/api/listings/?${query.toString()}`, {
-      next: { revalidate: 30 },
-      headers: { "Content-Type": "application/json" },
+      headers,
+      cache: "no-store",
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     const data = await res.json();
     if (Array.isArray(data)) {
       return { count: data.length, results: data };
     }
-    return { count: data.count || (data.results ? data.results.length : 0), results: data.results || [] };
+    return {
+      count: data.count || (data.results ? data.results.length : 0),
+      results: data.results || [],
+    };
   } catch (err) {
     console.warn("Using fallback listings:", err);
     let filtered = [...FALLBACK_LISTINGS];
     if (params.search) {
       const q = String(params.search).toLowerCase();
-      filtered = filtered.filter((i) => i.title.toLowerCase().includes(q) || i.description?.toLowerCase().includes(q));
+      filtered = filtered.filter(
+        (i) => i.title.toLowerCase().includes(q) || i.description?.toLowerCase().includes(q)
+      );
     }
-    if (params.category_slug) {
-      filtered = filtered.filter((i) => i.category_slug === params.category_slug);
+    if (params.category) {
+      filtered = filtered.filter(
+        (i) => String(i.category) === String(params.category) || i.category_slug === params.category
+      );
+    }
+    if (params.condition) {
+      filtered = filtered.filter((i) => i.condition.toLowerCase() === String(params.condition).toLowerCase());
     }
     return { count: filtered.length, results: filtered };
   }
@@ -281,10 +397,15 @@ export async function fetchListings(params: Record<string, string | number | und
 
 export async function fetchListingBySlug(slug: string): Promise<Listing | null> {
   try {
-    // Check API list by slug or detail
-    const res = await fetch(`${API_BASE}/api/listings/?slug=${slug}`, { next: { revalidate: 15 } });
+    // 1. Try direct lookup by slug or ID
+    const res = await fetch(`${API_BASE}/api/listings/${slug}/`, { cache: "no-store" });
     if (res.ok) {
-      const data = await res.json();
+      return await res.json();
+    }
+    // 2. Try query param filter
+    const queryRes = await fetch(`${API_BASE}/api/listings/?slug=${slug}`, { cache: "no-store" });
+    if (queryRes.ok) {
+      const data = await queryRes.json();
       const item = Array.isArray(data) ? data[0] : (data.results && data.results[0]);
       if (item) return item;
     }
@@ -295,9 +416,113 @@ export async function fetchListingBySlug(slug: string): Promise<Listing | null> 
   return match || null;
 }
 
+export async function fetchListingById(id: number | string): Promise<Listing | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/listings/${id}/`, { cache: "no-store" });
+    if (res.ok) return await res.json();
+  } catch (e) {
+    console.warn("fetchListingById error:", e);
+  }
+  return null;
+}
+
+export async function createListing(data: any, token?: string): Promise<Listing> {
+  const res = await fetch(`${API_BASE}/api/listings/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.detail || JSON.stringify(errorData) || `Failed to create listing: ${res.status}`);
+  }
+  return await res.json();
+}
+
+export async function markListingSold(id: number | string, token?: string): Promise<Listing> {
+  const res = await fetch(`${API_BASE}/api/listings/${id}/mark_sold/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to mark sold: ${res.status}`);
+  }
+  return await res.json();
+}
+
+export async function renewListing(id: number | string, token?: string): Promise<Listing> {
+  const res = await fetch(`${API_BASE}/api/listings/${id}/renew/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to renew listing: ${res.status}`);
+  }
+  return await res.json();
+}
+
+export async function deleteListing(id: number | string, token?: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/api/listings/${id}/`, {
+    method: "DELETE",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  return res.ok || res.status === 204;
+}
+
+export async function approveListing(id: number | string, token?: string): Promise<Listing> {
+  const res = await fetch(`${API_BASE}/api/listings/${id}/approve/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) throw new Error(`Failed to approve listing: ${res.status}`);
+  return await res.json();
+}
+
+export async function rejectListing(id: number | string, token?: string): Promise<Listing> {
+  const res = await fetch(`${API_BASE}/api/listings/${id}/reject/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) throw new Error(`Failed to reject listing: ${res.status}`);
+  return await res.json();
+}
+
+export async function uploadListingImage(listingId: number, file: File, isPrimary: boolean, token?: string) {
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("is_primary", String(isPrimary));
+  formData.append("order", "0");
+
+  const res = await fetch(`${API_BASE}/api/listings/${listingId}/upload_image/`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+  return await res.json();
+}
+
 export async function fetchCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/categories/`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE}/api/categories/`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
       const list = Array.isArray(data) ? data : data.results;
@@ -317,32 +542,50 @@ export async function fetchJobs(params: Record<string, string | number | undefin
 
   try {
     const res = await fetch(`${API_BASE}/api/jobs/?${query.toString()}`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (res.ok) {
       const data = await res.json();
-      return Array.isArray(data) ? data : (data.results || []);
+      const list = Array.isArray(data) ? data : (data.results || []);
+      if (list && list.length > 0) return list;
     }
   } catch (e) {
     console.warn("fetchJobs API error:", e);
   }
-  return [];
+
+  // Filter fallback jobs if query provided
+  let filtered = [...FALLBACK_JOBS];
+  if (params.search) {
+    const q = String(params.search).toLowerCase();
+    filtered = filtered.filter(
+      (j) =>
+        j.title.toLowerCase().includes(q) ||
+        j.company_name?.toLowerCase().includes(q) ||
+        j.description?.toLowerCase().includes(q)
+    );
+  }
+  return filtered;
 }
 
 export async function fetchJobById(id: string | number): Promise<Job | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/jobs/${id}/`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE}/api/jobs/${id}/`, { cache: "no-store" });
     if (res.ok) {
       return await res.json();
     }
   } catch (e) {
     console.warn("fetchJobById API error:", e);
   }
-  return null;
+  const fallback = FALLBACK_JOBS.find((j) => String(j.id) === String(id));
+  return fallback || null;
 }
 
-export async function createListing(data: any, token?: string): Promise<Listing> {
-  const res = await fetch(`${API_BASE}/api/listings/`, {
+/* =========================================================================
+   ORDERS & ESCROW CHECKOUT API
+   ========================================================================= */
+
+export async function createOrder(data: any, token?: string): Promise<Order> {
+  const res = await fetch(`${API_BASE}/api/orders/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -351,24 +594,379 @@ export async function createListing(data: any, token?: string): Promise<Listing>
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(JSON.stringify(errorData) || `Failed to create listing: ${res.status}`);
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.detail || JSON.stringify(err) || `Failed to create order: ${res.status}`);
   }
   return await res.json();
 }
 
-export async function uploadListingImage(listingId: number, file: File, isPrimary: boolean, token?: string) {
-  const formData = new FormData();
-  formData.append("image", file);
-  formData.append("is_primary", String(isPrimary));
-  formData.append("order", "0");
+export async function fetchOrders(token?: string): Promise<Order[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.results || []);
+    }
+  } catch (e) {
+    console.warn("fetchOrders error:", e);
+  }
+  return [];
+}
 
-  const res = await fetch(`${API_BASE}/api/listings/${listingId}/upload_image/`, {
+export async function fetchOrderByNumber(orderNumber: string, token?: string): Promise<Order | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/${orderNumber}/`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      cache: "no-store",
+    });
+    if (res.ok) return await res.json();
+  } catch (e) {
+    console.warn("fetchOrderByNumber error:", e);
+  }
+  return null;
+}
+
+/* =========================================================================
+   MESSAGING & CONVERSATIONS API
+   ========================================================================= */
+
+export async function fetchConversations(token: string): Promise<Conversation[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/conversations/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.warn("fetchConversations error:", e);
+  }
+  return [];
+}
+
+export async function fetchConversationMessages(convId: number | string, token: string): Promise<ChatMessage[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/conversations/${convId}/messages/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.warn("fetchConversationMessages error:", e);
+  }
+  return [];
+}
+
+export async function sendMessage(convId: number | string, content: string, token: string): Promise<ChatMessage> {
+  const res = await fetch(`${API_BASE}/api/conversations/${convId}/messages/`, {
     method: "POST",
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-    body: formData,
+    body: JSON.stringify({ content }),
   });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Failed to send message: ${res.status}`);
+  }
   return await res.json();
 }
+
+export async function startConversation(listingId: number, initialMessage: string, token: string): Promise<Conversation> {
+  const res = await fetch(`${API_BASE}/api/conversations/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      listing_id: listingId,
+      initial_message: initialMessage,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.detail || JSON.stringify(err) || `Failed to start chat: ${res.status}`);
+  }
+  return await res.json();
+}
+
+/* =========================================================================
+   AUTHENTICATION & USER PROFILE API
+   ========================================================================= */
+
+export async function loginWithEmail(email: string, password: string): Promise<{ tokens: { access: string; refresh: string }; user: User }> {
+  const res = await fetch(`${API_BASE}/api/auth/login/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || err.error || (err.non_field_errors && err.non_field_errors[0]) || "Invalid credentials.");
+  }
+  return await res.json();
+}
+
+export async function registerUser(payload: {
+  email: string;
+  username?: string;
+  name?: string;
+  phone_number?: string;
+  password: string;
+  role?: string;
+}): Promise<{ tokens: { access: string; refresh: string }; user: User }> {
+  const res = await fetch(`${API_BASE}/api/auth/register/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg =
+      err.email?.[0] ||
+      err.phone_number?.[0] ||
+      err.username?.[0] ||
+      err.password?.[0] ||
+      err.detail ||
+      err.error ||
+      "Registration failed.";
+    throw new Error(msg);
+  }
+  return await res.json();
+}
+
+export async function requestPhoneOTP(phoneNumber: string): Promise<{ message: string; phone_number: string; dev_otp?: string }> {
+  const res = await fetch(`${API_BASE}/api/auth/request-phone-otp/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone_number: phoneNumber }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to dispatch verification code.");
+  }
+  return await res.json();
+}
+
+export async function verifyPhoneOTP(phoneNumber: string, otpCode: string, token?: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/api/auth/verify-phone/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ phone_number: phoneNumber, otp_code: otpCode }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.otp_code?.[0] || "Invalid or expired verification code.");
+  }
+  return await res.json();
+}
+
+export async function fetchCurrentUser(token: string): Promise<User> {
+  const res = await fetch(`${API_BASE}/api/users/me/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Failed to load profile: ${res.status}`);
+  return await res.json();
+}
+
+export async function updateCurrentUser(data: Partial<User>, token: string): Promise<User> {
+  const res = await fetch(`${API_BASE}/api/users/me/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.detail || "Failed to update profile.");
+  }
+  return await res.json();
+}
+
+export async function changePassword(oldPassword: string, newPassword: string, token: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE}/api/auth/password/change/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.detail || "Failed to change password.");
+  }
+  return await res.json();
+}
+
+export async function requestPasswordReset(identifier: string): Promise<{ message: string; dev_reset_code?: string }> {
+  const payload = identifier.includes("@") ? { email: identifier } : { phone_number: identifier };
+  const res = await fetch(`${API_BASE}/api/auth/password/reset/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to request password reset.");
+  }
+  return await res.json();
+}
+
+export async function confirmPasswordReset(identifier: string, code: string, newPassword: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE}/api/auth/password/reset/confirm/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: identifier.includes("@") ? identifier : undefined,
+      phone_number: !identifier.includes("@") ? identifier : undefined,
+      code,
+      new_password: newPassword,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to reset password.");
+  }
+  return await res.json();
+}
+
+export async function refreshAccessToken(refreshToken: string): Promise<{ access: string }> {
+  const res = await fetch(`${API_BASE}/api/auth/token/refresh/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh: refreshToken }),
+  });
+  if (!res.ok) throw new Error("Token refresh failed");
+  return await res.json();
+}
+
+/* =========================================================================
+   CAREER APPLICATIONS & SAVED ROLES API
+   ========================================================================= */
+
+export async function applyForJob(
+  jobId: number,
+  data: { full_name: string; email: string; phone: string; cover_letter?: string; resume_url?: string },
+  token: string
+): Promise<JobApplication> {
+  const res = await fetch(`${API_BASE}/api/job-applications/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      job: jobId,
+      ...data,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || err.error || "Failed to submit application.");
+  }
+  return await res.json();
+}
+
+export async function fetchJobApplications(token: string): Promise<JobApplication[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/job-applications/`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.results || []);
+    }
+  } catch (e) {
+    console.warn("fetchJobApplications error:", e);
+  }
+  return [];
+}
+
+export async function toggleSaveJob(jobId: number, token: string): Promise<{ saved: boolean; message: string }> {
+  const res = await fetch(`${API_BASE}/api/saved-jobs/toggle/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ job_id: jobId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to toggle saved role.");
+  }
+  return await res.json();
+}
+
+export async function fetchSavedJobs(token: string): Promise<SavedJob[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/saved-jobs/`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.results || []);
+    }
+  } catch (e) {
+    console.warn("fetchSavedJobs error:", e);
+  }
+  return [];
+}
+
+export async function toggleFavorite(listingId: number, token: string): Promise<{ favorited: boolean }> {
+  const res = await fetch(`${API_BASE}/api/favorites/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ listing_id: listingId }),
+  });
+  if (!res.ok) throw new Error("Failed to toggle favorite");
+  return await res.json();
+}
+
+export async function fetchFavorites(token: string): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/favorites/`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.results || []);
+    }
+  } catch (e) {
+    console.warn("fetchFavorites error:", e);
+  }
+  return [];
+}
+
+

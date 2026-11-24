@@ -172,6 +172,17 @@ class Listing(models.Model):
         self.deleted_at = timezone.now()
         self.save(update_fields=["is_deleted", "deleted_at"])
 
+    def renew(self, days=30):
+        """Seller renews listing: extends expiry by specified days and resets active status"""
+        self.expires_at = timezone.now() + timezone.timedelta(days=days)
+        self.status = self.STATUS_ACTIVE
+        self.save(update_fields=["expires_at", "status", "updated_at"])
+
+    def mark_sold(self):
+        """Marks the listing as sold"""
+        self.status = self.STATUS_SOLD
+        self.save(update_fields=["status", "updated_at"])
+
     @property
     def is_active(self) -> bool:
         if self.is_deleted or self.status != self.STATUS_ACTIVE:
@@ -265,3 +276,102 @@ class ListingAttribute(models.Model):
 
     def __str__(self):
         return f"{self.listing.title} -> {self.name}: {self.value}"
+
+
+class Order(models.Model):
+    """
+    Escrow-protected marketplace order for fine goods and services.
+    Supports in-person pickup and courier delivery across Tanzania.
+    """
+    STATUS_PENDING_PAYMENT = "PENDING_PAYMENT"
+    STATUS_ESCROW_LOCKED = "ESCROW_LOCKED"
+    STATUS_DISPATCHED = "DISPATCHED"
+    STATUS_DELIVERED = "DELIVERED"
+    STATUS_RELEASED = "RELEASED"
+    STATUS_CANCELLED = "CANCELLED"
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING_PAYMENT, _("Pending Payment")),
+        (STATUS_ESCROW_LOCKED, _("Escrow Locked / Funds Held")),
+        (STATUS_DISPATCHED, _("Dispatched / In Transit")),
+        (STATUS_DELIVERED, _("Delivered / Awaiting Inspection")),
+        (STATUS_RELEASED, _("Completed / Funds Released")),
+        (STATUS_CANCELLED, _("Cancelled / Refunded")),
+    ]
+
+    PAYMENT_MPESA = "mpesa"
+    PAYMENT_TIGO = "tigo"
+    PAYMENT_AIRTEL = "airtel"
+    PAYMENT_BANK = "bank"
+    PAYMENT_CHOICES = [
+        (PAYMENT_MPESA, "Vodacom M-Pesa"),
+        (PAYMENT_TIGO, "Tigo Pesa"),
+        (PAYMENT_AIRTEL, "Airtel Money"),
+        (PAYMENT_BANK, "Bank Wire / Swift"),
+    ]
+
+    DELIVERY_COURIER = "courier"
+    DELIVERY_PICKUP = "pickup"
+    DELIVERY_CHOICES = [
+        (DELIVERY_COURIER, "Direct Courier / Express Delivery"),
+        (DELIVERY_PICKUP, "Direct In-Person / Showroom Pickup"),
+    ]
+
+    order_number = models.CharField(max_length=32, unique=True, db_index=True)
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="placed_orders",
+        null=True,
+        blank=True
+    )
+    buyer_name = models.CharField(max_length=255)
+    buyer_phone = models.CharField(max_length=30)
+    buyer_email = models.EmailField(blank=True)
+
+    delivery_method = models.CharField(max_length=20, choices=DELIVERY_CHOICES, default=DELIVERY_COURIER)
+    delivery_address = models.CharField(max_length=255, blank=True)
+    delivery_district = models.CharField(max_length=100, blank=True)
+    delivery_region = models.CharField(max_length=100, default="Dar es Salaam")
+
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default=PAYMENT_MPESA)
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default=STATUS_ESCROW_LOCKED, db_index=True)
+
+    items_total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    delivery_fee = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    total_amount = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "listings_order"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Order #{self.order_number} - TSh {self.total_amount:,.0f} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = f"AT-{secrets.token_hex(4).upper()}"
+        super().save(*args, **kwargs)
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    listing = models.ForeignKey(Listing, on_delete=models.SET_NULL, null=True, blank=True, related_name="order_items")
+    title = models.CharField(max_length=255)
+    unit_price = models.DecimalField(max_digits=14, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = "listings_order_item"
+
+    def __str__(self):
+        return f"{self.quantity}x {self.title} @ TSh {self.unit_price:,.0f}"
+
+    @property
+    def subtotal(self):
+        return self.unit_price * self.quantity
+

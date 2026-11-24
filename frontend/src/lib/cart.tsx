@@ -6,7 +6,7 @@ import { OrderItem } from "@/types";
 interface CartContextType {
   items: OrderItem[];
   addToCart: (item: Omit<OrderItem, "quantity">) => void;
-  removeFromCart: (listingId: number) => void;
+  removeFromCart: (listingId?: number | null) => void;
   clearCart: () => void;
   totalPrice: number;
   itemCount: number;
@@ -50,7 +50,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const removeFromCart = (listingId: number) => {
+  const removeFromCart = (listingId?: number | null) => {
+    if (listingId === undefined || listingId === null) return;
     setItems((prev) => prev.filter((i) => i.listing_id !== listingId));
   };
 
@@ -59,7 +60,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const totalPrice = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + Number(item.price || item.unit_price || 0) * item.quantity,
     0
   );
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);

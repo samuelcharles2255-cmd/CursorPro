@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -56,7 +57,7 @@ class Profile(models.Model):
     auth stays lean and fast to query, profile can grow (resume, bio,
     avatar, skills) without touching the table Django checks on every request.
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="job_seeker_profile")
     bio = models.TextField(blank=True)
     location = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=30, blank=True)
@@ -92,7 +93,7 @@ class EmployerProfile(models.Model):
     because an employer's relevant data (which company, verified or not)
     has nothing to do with a job seeker's bio/resume.
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="employer_profile")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="employer_job_profile")
     company = models.ForeignKey(
         Company, on_delete=models.SET_NULL, null=True, blank=True, related_name="employer_members"
     )

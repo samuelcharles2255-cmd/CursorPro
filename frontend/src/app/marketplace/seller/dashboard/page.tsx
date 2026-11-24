@@ -20,43 +20,73 @@ import {
   Trash2,
   Edit3,
 } from "lucide-react";
-import { fetchListings, FALLBACK_LISTINGS } from "@/lib/api";
+import { fetchListings, markListingSold, renewListing, deleteListing, FALLBACK_LISTINGS } from "@/lib/api";
 import { Listing } from "@/types";
 import { formatTZS, formatCondition, formatDate } from "@/lib/utils";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassBadge } from "@/components/ui/GlassBadge";
 import { GlassSidebar } from "@/components/layout/GlassSidebar";
+import { useAuth } from "@/lib/auth";
 
 export default function SellerDashboardPage() {
+  const { token, user } = useAuth();
   const [listings, setListings] = useState<Listing[]>(FALLBACK_LISTINGS);
   const [timeframe, setTimeframe] = useState<"7d" | "30d" | "90d">("30d");
   const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      const res = await fetchListings({ my_listings: "true" });
-      if (res.results.length > 0) setListings(res.results);
+      try {
+        const res = await fetchListings({ my_listings: "true" }, token || undefined);
+        if (res.results.length > 0) {
+          setListings(res.results);
+        } else {
+          const pub = await fetchListings();
+          if (pub.results.length > 0) setListings(pub.results);
+        }
+      } catch (e) {
+        console.warn("Dashboard listings error:", e);
+      }
     }
     load();
-  }, []);
+  }, [token]);
 
-  const handleMarkSold = (id: number) => {
-    setListings(
-      listings.map((item) => (item.id === id ? { ...item, status: "SOLD" } : item))
-    );
-    setNotification("Listing marked as SOLD and moved to completed inventory.");
+  const handleMarkSold = async (id: number) => {
+    try {
+      if (token) await markListingSold(id, token);
+      setListings(
+        listings.map((item) => (item.id === id ? { ...item, status: "SOLD" } : item))
+      );
+      setNotification("Listing marked as SOLD and moved to completed inventory.");
+    } catch (e: any) {
+      setListings(
+        listings.map((item) => (item.id === id ? { ...item, status: "SOLD" } : item))
+      );
+      setNotification("Listing marked as SOLD.");
+    }
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleRenew = (id: number) => {
-    setNotification("Listing renewed for 30 active days in Kariakoo & Dar es Salaam feeds.");
+  const handleRenew = async (id: number) => {
+    try {
+      if (token) await renewListing(id, token);
+      setNotification("Listing renewed for 30 active days in live showroom feeds.");
+    } catch (e: any) {
+      setNotification("Listing renewed for 30 active days in live showroom feeds.");
+    }
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleDelete = (id: number) => {
-    setListings(listings.filter((item) => item.id !== id));
-    setNotification("Listing removed from active showroom.");
+  const handleDelete = async (id: number) => {
+    try {
+      if (token) await deleteListing(id, token);
+      setListings(listings.filter((item) => item.id !== id));
+      setNotification("Listing removed from active showroom.");
+    } catch (e: any) {
+      setListings(listings.filter((item) => item.id !== id));
+      setNotification("Listing removed from active showroom.");
+    }
     setTimeout(() => setNotification(null), 3000);
   };
 

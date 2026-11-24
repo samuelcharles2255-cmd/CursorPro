@@ -12,24 +12,26 @@ import {
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
-import { fetchJobs } from "@/lib/api";
+import { fetchJobs, FALLBACK_JOBS } from "@/lib/api";
 import { Job } from "@/types";
 import { JobCard } from "@/components/features/jobs/JobCard";
 import { GlassSidebar } from "@/components/layout/GlassSidebar";
 
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[]>(FALLBACK_JOBS);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
       setIsLoading(true);
       try {
         const data = await fetchJobs({ search });
-        setJobs(data);
+        if (data && data.length > 0) {
+          setJobs(data);
+        }
       } catch (e) {
         console.warn("Jobs load error:", e);
       } finally {
@@ -40,8 +42,11 @@ export default function JobsPage() {
   }, [search]);
 
   const filtered = jobs.filter((j) => {
-    if (typeFilter !== "all" && j.employment_type?.toLowerCase() !== typeFilter.toLowerCase()) {
-      return false;
+    if (typeFilter !== "all") {
+      const empType = (j.employment_type || "full-time").toLowerCase();
+      if (!empType.includes(typeFilter.toLowerCase())) {
+        return false;
+      }
     }
     if (locationFilter !== "all") {
       const loc = (j.location || "").toLowerCase();

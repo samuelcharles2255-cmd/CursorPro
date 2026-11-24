@@ -18,10 +18,11 @@ import {
   HelpCircle,
   Eye,
 } from "lucide-react";
-import { fetchListingBySlug, fetchListings, FALLBACK_LISTINGS } from "@/lib/api";
+import { fetchListingBySlug, fetchListings, startConversation, FALLBACK_LISTINGS } from "@/lib/api";
 import { Listing } from "@/types";
 import { formatTZS, formatCondition, formatDate, getConditionColor } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassBadge } from "@/components/ui/GlassBadge";
 import { GlassModal } from "@/components/ui/GlassModal";
@@ -46,6 +47,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
   const [notification, setNotification] = useState<string | null>(null);
 
   const { addToCart } = useCart();
+  const { token } = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -73,24 +75,50 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
   }
 
   const priceNum = typeof listing.price === "string" ? parseFloat(listing.price) : listing.price;
-  const imageGallery = [
-    activeImage,
-    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
-  ];
+  const imageGallery =
+    listing.images && listing.images.length > 0
+      ? listing.images.map((img) => img.image)
+      : [activeImage || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80"];
 
-  const handleMakeOffer = (e: React.FormEvent) => {
+  const handleMakeOffer = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsOfferModalOpen(false);
-    setNotification(`Offer of ${formatTZS(offerAmount)} transmitted to seller via The City.`);
-    setTimeout(() => setNotification(null), 4000);
+    if (!token) {
+      setNotification("Please sign in to transmit formal offers to verified merchants.");
+      setTimeout(() => setNotification(null), 4000);
+      return;
+    }
+    try {
+      await startConversation(
+        listing.id,
+        `Official Offer Transmitted: ${formatTZS(offerAmount)} TZS. Inquiring regarding inspection & escrow checkout.`,
+        token
+      );
+      setIsOfferModalOpen(false);
+      setNotification(`Offer of ${formatTZS(offerAmount)} transmitted to seller via Atrium Escrow.`);
+      setTimeout(() => setNotification(null), 4000);
+    } catch (err: any) {
+      setNotification(err.message || "Failed to transmit offer. Please retry.");
+      setTimeout(() => setNotification(null), 4000);
+    }
   };
 
-  const handleSendChat = (e: React.FormEvent) => {
+  const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsChatModalOpen(false);
-    setNotification("Inquiry sent directly to seller. You can track this in Messages.");
-    setTimeout(() => setNotification(null), 4000);
+    if (!token) {
+      setNotification("Please sign in to send direct inquiries to the merchant.");
+      setTimeout(() => setNotification(null), 4000);
+      return;
+    }
+    try {
+      await startConversation(listing.id, chatMessage, token);
+      setIsChatModalOpen(false);
+      setChatMessage("");
+      setNotification("Direct inquiry dispatched to merchant. Check your Messages thread.");
+      setTimeout(() => setNotification(null), 4000);
+    } catch (err: any) {
+      setNotification(err.message || "Failed to dispatch message.");
+      setTimeout(() => setNotification(null), 4000);
+    }
   };
 
   const whatsappPhone = listing.seller_phone ? listing.seller_phone.replace(/[^0-9]/g, "") : "255755123456";

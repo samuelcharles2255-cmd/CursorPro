@@ -7,18 +7,37 @@ import { MapPin, Briefcase, Building2, Calendar, ArrowUpRight, Bookmark } from "
 import { Job } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { SafeImage } from "@/components/ui/SafeImage";
+import { useAuth } from "@/lib/auth";
+import { toggleSaveJob } from "@/lib/api";
 
 interface JobCardProps {
   job: Job;
 }
 
 export function JobCard({ job }: JobCardProps) {
+  const { token, loginAsDemo } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
 
-  const toggleSave = (e: React.MouseEvent) => {
+  const toggleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsSaved(!isSaved);
+    let activeToken = token;
+    if (!activeToken) {
+      try {
+        await loginAsDemo("buyer");
+        activeToken = localStorage.getItem("atrium_token");
+      } catch (err) {
+        console.warn("Auto login notice:", err);
+      }
+    }
+    if (activeToken) {
+      try {
+        const res = await toggleSaveJob(Number(job.id), activeToken);
+        setIsSaved(res.saved);
+      } catch (err) {
+        setIsSaved(!isSaved);
+      }
+    }
   };
 
   return (

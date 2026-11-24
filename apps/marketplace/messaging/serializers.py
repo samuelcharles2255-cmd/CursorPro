@@ -29,22 +29,52 @@ class SendMessageSerializer(serializers.Serializer):
 class ConversationSerializer(serializers.ModelSerializer):
     listing_id = serializers.IntegerField(source="listing.id", read_only=True)
     listing_title = serializers.CharField(source="listing.title", read_only=True)
+    listing_slug = serializers.CharField(source="listing.slug", read_only=True)
     listing_price = serializers.DecimalField(source="listing.price", max_digits=12, decimal_places=2, read_only=True)
+    listing_image = serializers.SerializerMethodField()
     buyer_id = serializers.IntegerField(source="buyer.id", read_only=True)
     buyer_username = serializers.CharField(source="buyer.username", read_only=True)
     seller_id = serializers.IntegerField(source="seller.id", read_only=True)
     seller_username = serializers.CharField(source="seller.username", read_only=True)
+    other_participant = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
         fields = [
-            "id", "listing_id", "listing_title", "listing_price",
+            "id", "listing_id", "listing_title", "listing_slug", "listing_price", "listing_image",
             "buyer_id", "buyer_username", "seller_id", "seller_username",
-            "is_blocked", "last_message", "unread_count",
+            "other_participant", "is_blocked", "last_message", "unread_count",
             "created_at", "updated_at"
         ]
+
+    def get_listing_image(self, obj):
+        if hasattr(obj, "listing") and obj.listing:
+            prim = obj.listing.primary_image
+            if prim and prim.image:
+                request = self.context.get("request")
+                return request.build_absolute_uri(prim.image.url) if request else prim.image.url
+        return None
+
+    def get_other_participant(self, obj):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            other = obj.seller if request.user == obj.buyer else obj.buyer
+            name = getattr(other, "name", "") or other.username
+            role = "Seller" if other == obj.seller else "Buyer"
+            return {
+                "id": other.id,
+                "name": name,
+                "username": other.username,
+                "role": role,
+            }
+        return {
+            "id": obj.seller.id,
+            "name": getattr(obj.seller, "name", "") or obj.seller.username,
+            "username": obj.seller.username,
+            "role": "Seller"
+        }
 
     def get_last_message(self, obj):
         last_msg = obj.messages.order_by("-created_at").first()

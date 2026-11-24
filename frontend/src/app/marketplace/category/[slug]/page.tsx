@@ -31,7 +31,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         const currentCat = cats.find((c) => c.slug === slug) || FALLBACK_CATEGORIES.find((c) => c.slug === slug) || null;
         setCategory(currentCat);
 
-        const res = await fetchListings({ category_slug: slug });
+        const res = await fetchListings({ category: slug });
         setListings(res.results.filter((i) => !currentCat || i.category_slug === slug || i.category === currentCat.id));
       } catch (e) {
         console.warn("Category load error:", e);

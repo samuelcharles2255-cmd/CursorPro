@@ -5,6 +5,8 @@ from .models import Listing
 
 class ListingFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method="filter_search", label="Search title and description")
+    slug = django_filters.CharFilter(field_name="slug", lookup_expr="iexact")
+    seller = django_filters.NumberFilter(field_name="seller_id")
     category = django_filters.CharFilter(method="filter_category", label="Category ID or Slug")
     subcategory = django_filters.CharFilter(method="filter_subcategory", label="Subcategory ID or Slug")
     min_price = django_filters.NumberFilter(field_name="price", lookup_expr="gte")
@@ -17,7 +19,7 @@ class ListingFilter(django_filters.FilterSet):
     class Meta:
         model = Listing
         fields = [
-            "search", "category", "subcategory", "min_price",
+            "search", "slug", "seller", "category", "subcategory", "min_price",
             "max_price", "region", "district", "condition", "status"
         ]
 

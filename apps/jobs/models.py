@@ -1,4 +1,5 @@
 import re
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -195,5 +196,68 @@ class JobSkill(models.Model):
         db_table = "job_skills"
         unique_together = ("job", "skill")
 
-# User, Profile and UserSkill now live in the `accounts` app —
-# auth is infrastructure, not a jobs-feature. See accounts/models.py.
+
+class JobApplication(models.Model):
+    STATUS_SUBMITTED = "SUBMITTED"
+    STATUS_UNDER_REVIEW = "UNDER_REVIEW"
+    STATUS_INTERVIEW_SCHEDULED = "INTERVIEW_SCHEDULED"
+    STATUS_OFFERED = "OFFERED"
+    STATUS_REJECTED = "REJECTED"
+
+    STATUS_CHOICES = [
+        (STATUS_SUBMITTED, "Submitted"),
+        (STATUS_UNDER_REVIEW, "Under Review"),
+        (STATUS_INTERVIEW_SCHEDULED, "Interview Scheduled"),
+        (STATUS_OFFERED, "Offer Extended"),
+        (STATUS_REJECTED, "Not Selected"),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="job_applications"
+    )
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name="applications"
+    )
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50)
+    cover_letter = models.TextField(blank=True, default="")
+    resume_url = models.URLField(max_length=1000, blank=True, default="")
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=STATUS_SUBMITTED)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "job_applications"
+        ordering = ["-created_at"]
+        unique_together = ("user", "job")
+
+    def __str__(self):
+        return f"{self.full_name} -> {self.job.title}"
+
+
+class SavedJob(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="saved_jobs"
+    )
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name="saved_by_users"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "saved_jobs"
+        ordering = ["-created_at"]
+        unique_together = ("user", "job")
+
+    def __str__(self):
+        return f"{self.user} saved {self.job.title}"
+

@@ -3,10 +3,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Lock, Mail, Phone, User, ShoppingBag, Briefcase, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Lock, Mail, Phone, User as UserIcon, ShoppingBag, Briefcase, CheckCircle2, AlertCircle } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassInput } from "@/components/ui/GlassInput";
 import { useAuth } from "@/lib/auth";
+import { registerUser } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,45 +18,30 @@ export default function RegisterPage() {
   const [phoneNumber, setPhoneNumber] = useState("+255");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      const res = await fetch(`${apiBase}/api/auth/register/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          username: email.split("@")[0] || "user",
-          name,
-          phone_number: phoneNumber,
-          password,
-        }),
+      const data = await registerUser({
+        email,
+        username: email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "_") || "user",
+        name,
+        phone_number: phoneNumber,
+        password,
+        role: role === "seller" ? "seller" : "buyer",
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        login(data.tokens?.access || "jwt_sample", data.user);
-        router.push(role === "seller" ? "/marketplace/create-listing" : "/marketplace");
-        return;
-      }
-    } catch (e) {
-      console.warn("Register API fallback:", e);
+      login(data.tokens.access, data.user, data.tokens.refresh);
+      router.push(role === "seller" ? "/marketplace/create-listing" : "/marketplace");
+    } catch (err: any) {
+      setError(err.message || "Failed to create account. Please check your information.");
+    } finally {
+      setIsLoading(false);
     }
-
-    login("jwt_sample", {
-      id: Date.now(),
-      email,
-      username: email.split("@")[0] || "user",
-      name,
-      phone_number: phoneNumber,
-      is_seller: role === "seller",
-    });
-    router.push(role === "seller" ? "/marketplace/create-listing" : "/marketplace");
-    setIsLoading(false);
   };
 
   return (
@@ -72,11 +58,11 @@ export default function RegisterPage() {
         <div className="rounded-3xl bg-dark-850/80 border border-white/[0.1] p-8 backdrop-blur-2xl shadow-glass-elevated space-y-6">
           <div className="text-center space-y-2">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-market-500/20 via-dark-850 to-navy-600/30 border border-market-400/30 flex items-center justify-center text-white font-bold text-sm mx-auto shadow-green-glow/20 tracking-wider">
-              TC
+              AT
             </div>
-            <h1 className="text-2xl font-serif font-medium text-white">Join The City</h1>
+            <h1 className="text-2xl font-serif font-medium text-white">Join Atrium</h1>
             <p className="text-xs text-zinc-400">
-              Create your account to trade luxury goods or discover executive careers.
+              Create your account to trade fine goods or discover executive careers.
             </p>
           </div>
 
@@ -84,7 +70,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-3 gap-2">
             {[
               { id: "seller", label: "Merchant", icon: ShoppingBag },
-              { id: "buyer", label: "Buyer", icon: User },
+              { id: "buyer", label: "Buyer", icon: UserIcon },
               { id: "jobseeker", label: "Job Seeker", icon: Briefcase },
             ].map((r) => {
               const Icon = r.icon;
@@ -95,7 +81,7 @@ export default function RegisterPage() {
                   onClick={() => setRole(r.id as any)}
                   className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 text-xs font-medium transition-all ${
                     role === r.id
-                      ? "bg-gold-500/15 border-gold-500/40 text-gold-300 shadow-gold-glow/10"
+                      ? "bg-market-500/15 border-market-500/40 text-market-300 shadow-green-glow/10"
                       : "bg-dark-900 border-white/[0.06] text-zinc-400 hover:text-white"
                   }`}
                 >
@@ -106,54 +92,65 @@ export default function RegisterPage() {
             })}
           </div>
 
+          {error && (
+            <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleRegister} className="space-y-4">
             <GlassInput
-              label="Full Name or Business Name *"
-              placeholder="e.g. Lumina Tech or Samuel J."
+              label="Full Name or Business Name"
+              type="text"
+              placeholder="e.g. Sarah Mwangi or Lumina Tech"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
             <GlassInput
-              label="Email Address *"
+              label="Email Address"
               type="email"
-              placeholder="you@domain.com"
+              placeholder="sarah@example.co.tz"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              icon={<Mail className="w-4 h-4 text-zinc-400" />}
               required
             />
             <GlassInput
-              label="Phone Number (WhatsApp verified) *"
+              label="Tanzanian Phone Number"
               type="tel"
-              placeholder="+255 755 123 456"
+              placeholder="+255712345678"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              icon={<Phone className="w-4 h-4 text-zinc-400" />}
               required
             />
             <GlassInput
-              label="Create Password *"
+              label="Password (min 8 chars)"
               type="password"
-              placeholder="At least 8 characters"
+              placeholder="••••••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              icon={<Lock className="w-4 h-4 text-zinc-400" />}
               required
             />
 
             <GlassButton
               type="submit"
-              variant="gold"
+              variant="market"
               size="lg"
-              className="w-full justify-center mt-2 shadow-gold-glow"
-              isLoading={isLoading}
+              className="w-full justify-center mt-2 shadow-green-glow/20"
+              disabled={isLoading}
             >
-              Complete Registration
+              {isLoading ? "Creating Account..." : "Create Account"}
             </GlassButton>
           </form>
 
-          <div className="pt-4 border-t border-white/[0.06] text-center text-xs text-zinc-400">
-            Already registered?{" "}
-            <Link href="/auth/login" className="text-gold-400 hover:underline font-medium">
-              Sign in
+          <div className="text-center pt-2 text-xs text-zinc-400">
+            Already have an account?{" "}
+            <Link href="/auth/login" className="text-market-400 hover:underline font-semibold">
+              Sign In
             </Link>
           </div>
         </div>

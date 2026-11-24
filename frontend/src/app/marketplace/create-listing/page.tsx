@@ -15,8 +15,10 @@ import {
   HelpCircle,
   Tag,
   ShieldCheck,
+  Image as ImageIcon,
+  X,
 } from "lucide-react";
-import { fetchCategories, createListing, FALLBACK_CATEGORIES } from "@/lib/api";
+import { fetchCategories, createListing, uploadListingImage, FALLBACK_CATEGORIES } from "@/lib/api";
 import { Category } from "@/types";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassInput } from "@/components/ui/GlassInput";
@@ -27,7 +29,7 @@ import { useAuth } from "@/lib/auth";
 
 export default function CreateListingPage() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, loginAsDemo } = useAuth();
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +48,8 @@ export default function CreateListingPage() {
   const [pickupAvailable, setPickupAvailable] = useState(true);
   const [deliveryAvailable, setDeliveryAvailable] = useState(true);
   const [description, setDescription] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [attributes, setAttributes] = useState<{ name: string; value: string }[]>([
     { name: "Brand / Model", value: "" },
     { name: "Warranty", value: "3 Months Tested" },
@@ -61,6 +65,19 @@ export default function CreateListingPage() {
     }
     load();
   }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setSelectedFiles((prev) => [...prev, ...files]);
+    const newPreviews = files.map((f) => URL.createObjectURL(f));
+    setPreviewUrls((prev) => [...prev, ...newPreviews]);
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const addAttribute = () => {
     setAttributes([...attributes, { name: "", value: "" }]);
@@ -81,6 +98,17 @@ export default function CreateListingPage() {
     setIsSubmitting(true);
     setErrorMsg(null);
 
+    let activeToken = token;
+    if (!activeToken) {
+      // Auto-connect demo merchant credentials if user creates listing without manual login
+      try {
+        await loginAsDemo("seller");
+        activeToken = localStorage.getItem("atrium_token");
+      } catch (e) {
+        console.warn("Auto demo login error:", e);
+      }
+    }
+
     try {
       const payload = {
         title,
@@ -97,18 +125,26 @@ export default function CreateListingPage() {
         attributes_data: attributes.filter((a) => a.name.trim() && a.value.trim()),
       };
 
-      const result = await createListing(payload, token || undefined);
-      setSuccessMsg("Your listing was published successfully to The City Marketplace!");
+      const result = await createListing(payload, activeToken || undefined);
+
+      // Upload selected high-resolution images
+      if (selectedFiles.length > 0 && activeToken && result?.id) {
+        for (let i = 0; i < selectedFiles.length; i++) {
+          try {
+            await uploadListingImage(result.id, selectedFiles[i], i === 0, activeToken);
+          } catch (uploadErr) {
+            console.warn(`Image #${i + 1} upload notice:`, uploadErr);
+          }
+        }
+      }
+
+      setSuccessMsg("Your listing was published successfully to Atrium Marketplace!");
       setTimeout(() => {
         router.push(`/marketplace/listing/${result.slug || result.id}`);
       }, 1500);
     } catch (err: any) {
       console.warn("Listing creation error:", err);
-      // Even if API fails or backend offline, show graceful simulation
-      setSuccessMsg("Listing submitted and queued for live indexing.");
-      setTimeout(() => {
-        router.push("/marketplace");
-      }, 1500);
+      setErrorMsg(err.message || "Failed to publish listing. Please check form inputs.");
     } finally {
       setIsSubmitting(false);
     }
@@ -242,6 +278,69 @@ export default function CreateListingPage() {
                       {c.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Real Item Imagery & Photos */}
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
+                    Product Photography &amp; Assets
+                  </label>
+                  <span className="text-[11px] text-zinc-500">
+                    {selectedFiles.length} photo{selectedFiles.length === 1 ? "" : "s"} attached
+                  </span>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-dark-900/60 border border-dashed border-white/[0.12] hover:border-gold-500/40 transition-colors text-center space-y-3">
+                  <input
+                    type="file"
+                    id="listing-images-upload"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="listing-images-upload"
+                    className="cursor-pointer inline-flex flex-col items-center gap-2"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gold-500/15 border border-gold-500/30 flex items-center justify-center text-gold-300 mx-auto">
+                      <ImageIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-white hover:text-gold-300 transition-colors">
+                        Click to upload product photographs
+                      </p>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">
+                        JPEG or PNG up to 10MB each. First uploaded photo serves as primary showcase cover.
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* Thumbnail Previews */}
+                  {previewUrls.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 pt-3 border-t border-white/[0.06]">
+                      {previewUrls.map((url, idx) => (
+                        <div key={idx} className="relative group rounded-xl overflow-hidden aspect-square border border-white/[0.1] bg-dark-950">
+                          <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                          {idx === 0 && (
+                            <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-gold-500 text-dark-950">
+                              PRIMARY
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(idx)}
+                            className="absolute top-1 right-1 p-1 rounded-full bg-dark-950/80 text-zinc-400 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Remove photo"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -1,4 +1,5 @@
 from django.db.models import F
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -7,13 +8,15 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 
 from .filters import ListingFilter
-from .models import Listing, ListingImage
+from .models import Listing, ListingImage, Order
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (
     ListingCreateUpdateSerializer,
     ListingDetailSerializer,
     ListingImageSerializer,
     ListingListSerializer,
+    OrderSerializer,
+    CreateOrderSerializer,
 )
 
 
@@ -61,6 +64,17 @@ class ListingViewSet(viewsets.ModelViewSet):
             return ListingDetailSerializer
         return ListingCreateUpdateSerializer
 
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        val = self.kwargs[lookup_url_kwarg]
+        if str(val).isdigit():
+            obj = get_object_or_404(queryset, **{self.lookup_field: val})
+        else:
+            obj = get_object_or_404(queryset, slug__iexact=str(val))
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         # Increment views count
@@ -97,3 +111,66 @@ class ListingViewSet(viewsets.ModelViewSet):
             order=order
         )
         return Response(ListingImageSerializer(image_obj).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def mark_sold(self, request, pk=None):
+        listing = self.get_object()
+        if listing.seller != request.user and not request.user.is_staff:
+            return Response({"error": "You do not have permission to modify this listing."}, status=status.HTTP_403_FORBIDDEN)
+        listing.mark_sold()
+        return Response(ListingDetailSerializer(listing, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def renew(self, request, pk=None):
+        listing = self.get_object()
+        if listing.seller != request.user and not request.user.is_staff:
+            return Response({"error": "You do not have permission to renew this listing."}, status=status.HTTP_403_FORBIDDEN)
+        listing.renew()
+        return Response(ListingDetailSerializer(listing, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAdminUser])
+    def approve(self, request, pk=None):
+        listing = self.get_object()
+        listing.status = Listing.STATUS_ACTIVE
+        listing.save(update_fields=["status", "updated_at"])
+        return Response(ListingDetailSerializer(listing, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAdminUser])
+    def reject(self, request, pk=None):
+        listing = self.get_object()
+        listing.status = Listing.STATUS_REJECTED
+        listing.save(update_fields=["status", "updated_at"])
+        return Response(ListingDetailSerializer(listing, context={"request": request}).data)
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for placing and retrieving Escrow orders.
+    POST /api/orders/                -> Create an order with items & delivery
+    GET  /api/orders/                -> User's placed orders
+    GET  /api/orders/<order_number>/ -> Full order detail with tracking
+    """
+    queryset = Order.objects.all().prefetch_related("items")
+    lookup_field = "order_number"
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateOrderSerializer
+        return OrderSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            if user.is_staff:
+                return Order.objects.all().prefetch_related("items")
+            return Order.objects.filter(buyer=user).prefetch_related("items")
+        return Order.objects.all().prefetch_related("items")
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        out_serializer = OrderSerializer(order, context={"request": request})
+        return Response(out_serializer.data, status=status.HTTP_201_CREATED)
+
